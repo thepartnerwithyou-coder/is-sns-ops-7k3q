@@ -1,0 +1,1023 @@
+<!doctype html><html><head><meta name="robots" content="noindex,nofollow"><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>부동산이즈 SNS 운영실</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap">
+<style>
+/* Layout: 맞집 SNS 운영실과 같은 틀. 왼쪽 흰 사이드바(채널별 색 띠 + 메뉴), 오른쪽 옅은 파랑 바탕에 결론 제목 → 큰 숫자 → 근거 차트 순서.
+   색은 의미를 가진다: 채널색(블로그 초록·유튜브 빨강·인스타 분홍·스레드 검정), 상태색(좋음·주의·위험)은 판정에만 쓴다. */
+:root{
+  --font:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --bg:#eef2fb; --bg2:#f8f9fd;
+  --surface:#ffffff; --surface2:#f3f5fb; --side:#ffffff; --input:#ffffff;
+  --fg:#101828; --menu:#4b5262; --muted:#6f7891; --soft:#b3bac8; --line:#e6eaf3;
+  --accent:#2f6bf0; --accent-soft:#e5edff; --accent-fg:#ffffff;
+  --blog:#03a14a; --blog-soft:#e3f5ea; --blog-deep:#027a38;
+  --yt:#e62117; --ig:#dc2743; --th:#14171f;
+  --good:#15803d; --good-soft:#e3f4ea; --warn:#b45309; --warn-soft:#fdf0d9; --crit:#dc2626; --crit-soft:#fde6e4;
+  --shadow:0 1px 2px rgba(20,32,70,.04),0 4px 14px rgba(40,70,150,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b0f19; --bg2:#0f1320;
+    --surface:#151b2a; --surface2:#1b2335; --side:#10151f; --input:#151b2a;
+    --fg:#e8ecf5; --menu:#c5ccdb; --muted:#97a1b6; --soft:#59627a; --line:#252e46;
+    --accent:#6a96ff; --accent-soft:#1c2a4f; --accent-fg:#0b1226;
+    --blog:#2fd478; --blog-soft:#12301f; --blog-deep:#2fd478;
+    --yt:#ff5a50; --ig:#ff6b86; --th:#e8ecf5;
+    --good:#4ade80; --good-soft:#123222; --warn:#fbbf24; --warn-soft:#3a2b0f; --crit:#f87171; --crit-soft:#3d1715;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b0f19; --bg2:#0f1320;
+  --surface:#151b2a; --surface2:#1b2335; --side:#10151f; --input:#151b2a;
+  --fg:#e8ecf5; --menu:#c5ccdb; --muted:#97a1b6; --soft:#59627a; --line:#252e46;
+  --accent:#6a96ff; --accent-soft:#1c2a4f; --accent-fg:#0b1226;
+  --blog:#2fd478; --blog-soft:#12301f; --blog-deep:#2fd478;
+  --yt:#ff5a50; --ig:#ff6b86; --th:#e8ecf5;
+  --good:#4ade80; --good-soft:#123222; --warn:#fbbf24; --warn-soft:#3a2b0f; --crit:#f87171; --crit-soft:#3d1715;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{word-break:keep-all;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
+input{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+.app{display:grid;grid-template-columns:226px minmax(0,1fr);min-height:100%;background:linear-gradient(150deg,var(--bg) 0%,var(--bg2) 60%)}
+.side{position:sticky;top:0;height:100dvh;overflow-y:auto;background:var(--side);border-right:1px solid var(--line);padding:0 12px 28px;display:flex;flex-direction:column}
+.sidehead{display:flex;align-items:center;height:49px;border-bottom:1px solid var(--line);margin:0 -12px 18px;padding:0 14px}
+.brand{font-weight:800;font-size:15px;letter-spacing:-.02em}
+.sect+.sect{margin-top:18px}
+.phead{display:flex;align-items:center;gap:10px;height:46px;padding:0 14px;border-radius:13px;color:#fff;font-weight:800;font-size:15px;margin-bottom:8px}
+.phead .ic{font-size:20px}
+.phead.rp{background:linear-gradient(180deg,#3b4a6b,#1d2740);box-shadow:0 9px 16px -7px rgba(29,39,64,.55)}
+.phead.bl{background:linear-gradient(180deg,#2fd478,#07a950);box-shadow:0 9px 16px -7px rgba(7,169,80,.6)}
+.phead.yt{background:linear-gradient(180deg,#f04a40,#d6261c);box-shadow:0 9px 16px -7px rgba(214,38,28,.6)}
+.phead.ig{background:linear-gradient(45deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);box-shadow:0 9px 16px -7px rgba(220,39,67,.55)}
+.phead.th{background:linear-gradient(180deg,#3a3f4c,#14171f);box-shadow:0 9px 16px -7px rgba(20,23,31,.6)}
+.phead .soon{margin-left:auto;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.22)}
+.item{display:flex;align-items:center;gap:11px;width:100%;height:36px;padding:0 12px;border-radius:11px;font-weight:700;font-size:15px;letter-spacing:-.02em;text-align:left;color:var(--menu)}
+.item .ic{font-size:19px}
+.item:hover{background:var(--surface2)}
+.item[aria-current="page"]{color:var(--accent);background:var(--accent-soft)}
+.topbar{display:none}
+.scrim{display:none}
+
+.main{min-width:0;padding-block:38px 64px;padding-left:max(16px,env(safe-area-inset-left,0px),clamp(16px,2.4vw,44px));padding-right:max(16px,env(safe-area-inset-right,0px),clamp(16px,2.6vw,36px))}
+.inner{max-width:1180px}
+.eyebrow{display:flex;align-items:center;gap:9px;margin-bottom:16px;font-size:12.5px;font-weight:700;color:var(--muted);flex-wrap:wrap}
+.tag{padding:3px 11px;border-radius:7px;font-weight:800;font-size:11.5px;letter-spacing:.04em;color:#fff}
+.tag.t-rp{background:#1d2740}.tag.t-bl{background:#03a94d}.tag.t-yt{background:#e62117}.tag.t-th{background:#14171f}
+.tag.t-ig{background:linear-gradient(45deg,#f09433,#dc2743 55%,#bc1888)}
+.eyebrow .sep{width:4px;height:4px;border-radius:50%;background:var(--soft)}
+h1{margin:0;font-size:28px;line-height:1.2;font-weight:800;letter-spacing:-.03em;text-wrap:balance}
+.big{display:flex;align-items:baseline;gap:10px;margin:6px 0 26px;flex-wrap:wrap}
+.big b{font-size:40px;line-height:1.1;font-weight:800;color:var(--blog-deep);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.big span{color:var(--muted);font-size:13px;font-weight:600}
+.ptool{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 22px;padding:12px 0;border-bottom:1px solid var(--line)}
+.note{color:var(--muted);font-size:13px;font-weight:600}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{padding:7px 16px;border-radius:8px;font-size:13.5px;font-weight:700;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--blog-deep);box-shadow:var(--shadow)}
+.note b{color:var(--fg)}
+
+/* 히어로 */
+.hero{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:18px}
+.hv{padding:26px 28px 20px;border-radius:20px;color:#fff;background:linear-gradient(135deg,#0bb85a 0%,#037a3a 100%);box-shadow:0 18px 34px -18px rgba(3,122,58,.7);display:flex;flex-direction:column;min-width:0}
+.hl{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;flex-wrap:wrap}
+.hl small{font-size:13px;font-weight:600;opacity:.8}
+.hl .chipw{background:rgba(255,255,255,.2);padding:2px 9px;border-radius:99px;font-size:13px;font-weight:800}
+.hn{margin:6px 0 4px;font-size:60px;line-height:1;font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.hn small{font-size:20px;font-weight:700;margin-left:4px;opacity:.85}
+.hcap{font-size:14px;font-weight:600;opacity:.85;margin-bottom:16px}
+.hbars{display:flex;align-items:flex-end;gap:4px;height:92px;margin-top:auto}
+.hbars i{flex:1;min-width:2px;max-width:48px;background:rgba(255,255,255,.5);border-radius:4px 4px 0 0;position:relative}
+.hbars i.cur{background:#fff}
+.hbars i.part{background:repeating-linear-gradient(135deg,rgba(255,255,255,.75) 0 3px,rgba(255,255,255,.35) 3px 6px)}
+.hax{display:flex;justify-content:space-between;margin-top:8px;font-size:12.5px;font-weight:600;opacity:.8}
+.hs{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden;min-width:0}
+.hr{flex:1;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:16px 22px}
+.hr+.hr{border-top:1px solid var(--line)}
+.dot{width:12px;height:12px;border-radius:4px;background:var(--blog)}
+.dot.b{background:var(--accent)}.dot.c{background:var(--warn)}
+.rl{font-size:13.5px;font-weight:700;color:var(--muted)}
+.rv{font-size:28px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.2}
+.rv small{font-size:14px;font-weight:700;color:var(--muted);margin-left:3px}
+.rd{max-width:140px;text-align:right;font-size:12.5px;line-height:1.4;color:var(--muted);font-weight:600}
+
+/* 구간 */
+.blk{margin-top:48px}
+.blk.first{margin-top:8px}
+.sec h2{position:relative;margin:0;padding-left:16px;font-size:21px;line-height:1.35;font-weight:800;letter-spacing:-.03em;text-wrap:balance}
+.sec h2::before{content:"";position:absolute;left:0;top:.2em;bottom:.2em;width:5px;border-radius:99px;background:var(--blog)}
+.sec h2.c-a::before{background:var(--accent)}
+.sec h2.c-w::before{background:var(--warn)}
+.sec h2.c-k::before{background:var(--fg)}
+.sec .sub{margin:6px 0 18px 16px;color:var(--muted);font-size:14.5px;line-height:1.6;font-weight:500;max-width:72ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px 26px}
+.ptitle{font-size:15px;font-weight:800;margin-bottom:14px}
+.hint{margin:14px 0 0;color:var(--muted);font-size:14px;line-height:1.7;font-weight:500}
+.hint b{color:var(--fg)}
+
+/* 세로 막대 */
+.vb{display:flex;align-items:flex-end;gap:2px;border-bottom:1px solid var(--line)}
+.vbc{flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;min-width:0;cursor:default}
+.vbc i{display:block;width:100%;max-width:28px;background:var(--blog);border-radius:4px 4px 0 0}
+.vbc.z i{background:var(--crit);height:3px!important;border-radius:2px;opacity:.55}
+.vbc.dim i{background:color-mix(in srgb,var(--blog) 45%,var(--surface2))}
+.vbc:hover i{filter:brightness(1.1)}
+.vbv{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:3px;font-variant-numeric:tabular-nums}
+.vbx{display:flex;gap:2px;margin-top:6px}
+.vbx span{flex:1;min-width:0;text-align:center;font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:visible}
+
+/* 가로 막대 비교 */
+.ir{display:grid;grid-template-columns:190px minmax(0,1fr) 64px 160px;gap:16px;align-items:center;padding:13px 0}
+.ir+.ir{border-top:1px solid var(--line)}
+.in{font-size:14.5px;font-weight:700}
+.trk{height:12px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.trk i{display:block;height:100%;border-radius:99px;background:var(--blog)}
+.trk.dim i{background:color-mix(in srgb,var(--blog) 40%,var(--surface2))}
+.iv{text-align:right;font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
+.ip{text-align:right;color:var(--muted);font-size:13px;font-weight:600}
+
+/* 표 */
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:18px}
+table{border-collapse:collapse;width:100%;min-width:720px}
+th{text-align:left;font-size:12.5px;font-weight:700;color:var(--muted);padding:13px 16px;border-bottom:1px solid var(--line);background:var(--surface2);white-space:nowrap}
+th button{font-weight:700;color:var(--muted);display:inline-flex;gap:4px;align-items:center}
+th button[aria-pressed="true"]{color:var(--accent)}
+td{padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:middle;font-variant-numeric:tabular-nums;font-size:14px}
+tr:last-child td{border-bottom:0}
+td.t{min-width:280px}
+td.t a{font-weight:700;text-decoration:none;line-height:1.45}
+td.t a:hover{text-decoration:underline}
+td.t .sub2{display:block;margin-top:3px;color:var(--muted);font-size:12.5px;font-weight:600}
+td.n,th.n{text-align:right}
+td.m{color:var(--muted);white-space:nowrap}
+.na{color:var(--soft);font-weight:600}
+.rk{display:inline-flex;align-items:center;justify-content:center;min-width:44px;padding:3px 10px;border-radius:99px;font-size:13px;font-weight:800;white-space:nowrap}
+.rk.top{background:var(--good-soft);color:var(--good)}
+.rk.mid{background:var(--warn-soft);color:var(--warn)}
+.rk.out{background:var(--surface2);color:var(--muted);font-weight:700}
+.mv{font-size:12px;font-weight:800;margin-left:6px}
+.mv.up{color:var(--good)}.mv.down{color:var(--crit)}
+
+/* 판정 카드 */
+.verd{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.vc{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px 22px;display:flex;flex-direction:column;gap:10px;min-width:0;border-top:4px solid var(--soft)}
+.vc.good{border-top-color:var(--good)}.vc.warn{border-top-color:var(--warn)}.vc.crit{border-top-color:var(--crit)}
+.vc h3{margin:0;font-size:16.5px;line-height:1.45;font-weight:800;letter-spacing:-.02em}
+.vc .fact{padding:10px 12px;border-radius:10px;background:var(--surface2);font-size:13.5px;line-height:1.6;font-weight:700}
+.vc p{margin:0;color:var(--muted);font-size:14px;line-height:1.7;font-weight:500}
+.pill{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.crit{background:var(--crit-soft);color:var(--crit)}
+.pill.off{background:var(--surface2);color:var(--muted)}
+
+.verdict-hero{padding:26px 28px;border-radius:20px;background:linear-gradient(135deg,#1d2740 0%,#0f1526 100%);color:#fff;box-shadow:0 18px 34px -20px rgba(15,21,38,.8)}
+.verdict-hero .vh1{font-size:13px;font-weight:700;opacity:.75;margin-bottom:8px}
+.verdict-hero .vh2{font-size:23px;line-height:1.45;font-weight:800;letter-spacing:-.025em;text-wrap:balance;max-width:40ch}
+.verdict-hero p{margin:14px 0 0;font-size:15px;line-height:1.75;font-weight:500;opacity:.88;max-width:70ch}
+.vcount{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.vcount span{padding:5px 12px;border-radius:99px;background:rgba(255,255,255,.12);font-size:13px;font-weight:700}
+
+/* 개선안 */
+.acts{display:flex;flex-direction:column;gap:12px}
+.act{display:grid;grid-template-columns:40px minmax(0,1fr);gap:16px;padding:20px 22px;background:var(--surface);border:1px solid var(--line);border-radius:16px}
+.act .no{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--accent);color:var(--accent-fg);font-weight:800;font-size:15px}
+.act h3{margin:2px 0 6px;font-size:16.5px;line-height:1.45;font-weight:800;letter-spacing:-.02em}
+.act p{margin:0;color:var(--fg);font-size:14.5px;line-height:1.75;font-weight:500;max-width:76ch}
+.act .ex{margin-top:8px;color:var(--muted);font-size:13px;font-weight:700}
+.act .ex b{color:var(--good)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:18px;align-items:start}
+.chk{display:flex;flex-direction:column;gap:2px}
+.chk label{display:flex;gap:12px;align-items:flex-start;padding:10px 6px;border-radius:10px;font-size:14.5px;line-height:1.5;font-weight:600;cursor:pointer}
+.chk label:hover{background:var(--surface2)}
+.chk input{width:18px;height:18px;margin-top:2px;accent-color:var(--blog);flex:none}
+.chk input:checked+span{color:var(--muted);text-decoration:line-through}
+.tpc{display:flex;flex-direction:column;gap:10px}
+.tp{padding:16px 18px;border-radius:14px;background:var(--surface2)}
+.tp b{display:block;font-size:15px;line-height:1.45;font-weight:800}
+.tp .kw{display:inline-block;margin:6px 0 4px;padding:2px 9px;border-radius:7px;background:var(--blog-soft);color:var(--blog-deep);font-size:12px;font-weight:800}
+.tp span{display:block;color:var(--muted);font-size:13.5px;line-height:1.6;font-weight:500}
+.bm-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 16px;border-radius:10px;background:var(--surface2);color:var(--fg);font-weight:800;font-size:13px;white-space:nowrap;border:1px solid var(--line)}
+.bm-btn:hover{border-color:var(--accent)}
+.bm-btn.pri{background:var(--blog);border-color:var(--blog);color:#fff}
+
+.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14.5px;line-height:1.65;font-weight:500}
+.steps b{font-weight:800}
+
+/* 채널 카드 (주간) */
+.chs{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.ch{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.ch .chh{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ch .chn{font-weight:800;font-size:15px;display:flex;align-items:center;gap:8px}
+.ch .sq{width:12px;height:12px;border-radius:4px}
+.ch .kv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ch .kv div{padding:10px 12px;border-radius:11px;background:var(--surface2)}
+.ch .kv span{display:block;color:var(--muted);font-size:12px;font-weight:700}
+.ch .kv b{display:block;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.ch .off{color:var(--muted);font-size:13.5px;line-height:1.6;font-weight:500}
+
+.plempty{padding:56px 12px;text-align:center;color:var(--muted)}
+.plempty b{display:block;color:var(--fg);font-size:17px;margin-bottom:6px}
+.plempty span{display:block;font-size:14px;font-weight:600;line-height:1.6}
+.spin{display:block;width:26px;height:26px;margin:0 auto 14px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--blog);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.tip{position:fixed;z-index:80;pointer-events:none;padding:8px 11px;border-radius:9px;background:var(--fg);color:var(--bg);font-size:12.5px;font-weight:700;line-height:1.45;max-width:260px;box-shadow:0 8px 20px -6px rgba(0,0,0,.4)}
+
+/* 냉정한 성과 진단 — 맞집 SNS 운영실과 같은 구성. 등급색: A 초록 · B 파랑 · C 주황 · D 빨강 */
+.sec h2.c-crit::before{background:var(--crit)}
+.rvtop{display:flex;gap:22px;align-items:flex-start}
+.rvg{flex:none;width:76px;height:76px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:32px;font-weight:900;line-height:1}
+.rvg small{font-size:11px;font-weight:700;margin-top:4px;opacity:.8}
+.ga{background:var(--good-soft);color:var(--good)}.gb{background:var(--accent-soft);color:var(--accent)}.gc{background:var(--warn-soft);color:var(--warn)}.gd{background:var(--crit-soft);color:var(--crit)}.gh{background:var(--surface2);color:var(--muted)}
+.rvh{min-width:0}.rvh>b{display:block;font-size:17px;line-height:1.5}
+.rvl{margin:10px 0 0;padding-left:18px;line-height:1.65;font-size:14px}.rvl li+li{margin-top:4px}
+.rvkpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}
+.kp{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.kp .kl{font-size:12.5px;font-weight:800;color:var(--muted)}
+.kp b{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.kp .kt{font-size:12.5px;color:var(--muted);font-weight:600}
+.kp .kn{font-size:12.5px;line-height:1.5;margin-top:4px}
+.kp .kbar{height:6px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-top:6px}
+.kp .kbar i{display:block;height:100%;border-radius:99px;background:var(--crit)}
+.kp .kbar i.m{background:var(--warn)}.kp .kbar i.h{background:var(--good)}
+.rvt{margin:26px 0 10px}
+.rva{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ra{padding:18px 20px}.rah{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}.rah b{font-size:15px;line-height:1.5;flex:1 1 200px}
+.rap{margin:10px 0 0;font-size:13.5px;color:var(--muted);line-height:1.6}.rap span{font-weight:800;color:var(--crit);margin-right:6px}
+.ras{margin:10px 0 0;padding-left:20px;font-size:14px;line-height:1.65}.ras li+li{margin-top:4px}
+.rae{margin:10px 0 0;font-size:13px;color:var(--good);font-weight:700}
+.rvp{display:flex;flex-direction:column;gap:10px}
+.rp{padding:0}.rp summary{display:flex;gap:12px;align-items:center;padding:14px 18px;cursor:pointer;list-style:none}.rp summary::-webkit-details-marker{display:none}
+.rpg{flex:none;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900}
+.rpt{min-width:0;display:flex;flex-direction:column}.rpt b{font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rpt small{font-size:12px;color:var(--muted)}
+.rpb{padding:0 18px 16px 64px;font-size:14px;line-height:1.65}.rpb p{margin:6px 0}.rpb a{font-size:13px;color:var(--accent);font-weight:700}
+.tg{display:inline-block;font-size:11.5px;font-weight:800;padding:1px 8px;border-radius:999px;margin-right:8px}
+.tg.ok{background:var(--good-soft);color:var(--good)}.tg.no{background:var(--crit-soft);color:var(--crit)}.tg.bt{background:var(--warn-soft);color:var(--warn)}.tg.nx{background:var(--accent-soft);color:var(--accent)}
+.rvfoot{margin:10px 2px 0;color:var(--muted);font-size:13px;font-weight:600}
+@media (max-width:880px){.rvkpi{grid-template-columns:repeat(2,minmax(0,1fr))}.rva{grid-template-columns:minmax(0,1fr)}.rpb{padding-left:18px}.rvtop{gap:14px}.rvg{width:60px;height:60px;font-size:26px}}
+
+@media (max-width:880px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .topbar{display:flex;align-items:center;gap:10px;position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--side);border-bottom:1px solid var(--line);padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:31;background:var(--side)}
+  .menu{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;font-size:18px}
+  .side{position:fixed;z-index:50;left:0;top:0;bottom:0;width:260px;max-width:86vw;transform:translateX(-102%);transition:transform .2s;padding-top:env(safe-area-inset-top,0px);padding-left:max(12px,env(safe-area-inset-left,0px))}
+  .side.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.35)}
+  .scrim.show{display:block;position:fixed;inset:0;z-index:40;background:rgba(10,14,24,.45)}
+  .main{padding-block:24px 64px}
+  h1{font-size:25px}
+  .hero,.two{grid-template-columns:minmax(0,1fr)}
+  .hn{font-size:48px}
+  .ir{grid-template-columns:minmax(0,1fr) 64px}
+  .ir .trk{grid-column:1/-1;order:3}
+  .ir .ip{display:none}
+  .verd{grid-template-columns:minmax(0,1fr)}
+  .vb.dense .vbv{display:none}
+  .act{grid-template-columns:minmax(0,1fr);gap:10px}
+  .sec h2{font-size:19px}
+  .verdict-hero .vh2{font-size:20px}
+}
+
+/* 벤치마킹 · 기획 (2026-10-29) — 맞집 SNS 운영실과 같은 구성 */
+.sec h2.c-ai::before{background:var(--accent)}
+.kwc{margin-top:14px;padding:0;overflow:hidden}
+.kwc summary{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:16px 20px;cursor:pointer;list-style:none}
+.kwc summary::-webkit-details-marker{display:none}
+.kwc summary b{font-size:16px;font-weight:800;margin-right:auto}
+.kwb{padding:0 20px 20px}
+.srcs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
+.srcc{display:inline-flex;gap:6px;align-items:center;padding:4px 11px;border-radius:99px;background:var(--surface2);font-size:12.5px;font-weight:700;text-decoration:none;color:var(--muted)}
+.srcc.ours{background:var(--blog-soft);color:var(--blog-deep);box-shadow:inset 0 0 0 1px var(--blog)}
+.aians{margin:0 0 14px;padding:14px 16px;border-radius:12px;background:var(--surface2);font-size:13.5px;line-height:1.7;white-space:pre-wrap;max-height:220px;overflow:auto}
+.dd{font-size:12px;font-weight:800;color:var(--good);margin-left:4px}
+tr.ours td{background:var(--blog-soft)}
+.plgrid{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.25fr);gap:20px;align-items:start}
+.plist{display:flex;flex-direction:column;gap:10px}
+.plrow{position:relative;display:flex;flex-direction:column;gap:6px;width:100%;padding:14px 18px 14px 22px;border-radius:14px;background:var(--surface);border:1px solid var(--line);text-align:left;overflow:hidden}
+.plrow::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--accent)}
+.plrow.k-my::before{background:var(--blog)}.plrow.k-trend::before{background:var(--warn)}
+.plrow[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.plrow b{font-size:15px;line-height:1.45;font-weight:800}
+.plrow span{font-size:12.5px;font-weight:700;color:var(--muted)}
+.pldetail{position:sticky;top:16px;padding:24px 26px;border-radius:20px;background:var(--surface);border:1px solid var(--line)}
+.plt2{font-size:20px;line-height:1.45;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
+.plref{padding:12px 16px;border-radius:12px;background:var(--accent-soft);font-size:14px;line-height:1.65;margin:12px 0}
+.kwchips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.kwchips span{padding:3px 11px;border-radius:99px;background:var(--blog-soft);color:var(--blog-deep);font-size:12.5px;font-weight:800}
+.kwchips span.s{background:var(--surface2);color:var(--muted)}
+.plh3{margin:22px 0 8px;font-size:15px;font-weight:800}
+.plhook{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;margin-bottom:8px;border-radius:12px;border:1px solid var(--line);font-size:14.5px;font-weight:700;line-height:1.5}
+.plhook em{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--surface2);color:var(--muted);font-size:12px;font-style:normal;font-weight:800}
+.plhook i{margin-left:auto;font-style:normal;font-size:11.5px;font-weight:800;color:var(--blog-deep);background:var(--blog-soft);padding:1px 8px;border-radius:99px;white-space:nowrap}
+.outl{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.outl div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;padding:11px 14px;font-size:14px;line-height:1.6}
+.outl div+div{border-top:1px solid var(--line)}
+.outl b{color:var(--accent);font-weight:800}
+.chks{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chks>div{padding:14px 16px;border-radius:12px;background:var(--surface2);font-size:13.5px;line-height:1.65}
+.chks b{display:block;margin-bottom:6px}
+.chks .ok b{color:var(--good)}.chks .no b{color:var(--crit)}
+.chks ul{margin:0;padding-left:18px}
+@media (max-width:880px){.plgrid{grid-template-columns:minmax(0,1fr)}.pldetail{position:static}.chks{grid-template-columns:1fr}.outl div{grid-template-columns:minmax(0,1fr)}}
+.ir.t1{grid-template-columns:150px minmax(0,1fr) 64px 130px}.ir.t2{grid-template-columns:minmax(0,1.2fr) 90px minmax(0,1fr)}
+@media (max-width:880px){.ir.t1{grid-template-columns:minmax(0,1fr) 56px}.ir.t1 .ip{display:none}.ir.t1>div:nth-child(2){grid-column:1/-1;order:3}.ir.t2{grid-template-columns:minmax(0,1fr) 80px}.ir.t2>div:nth-child(3){grid-column:1/-1}.ir.t2 .ip{max-width:100%;overflow-wrap:anywhere}}
+
+/* 움직이는 그래프 (2026-10-30). 기본 모양이 완성된 상태이고, .play 일 때만 처음 한 번 그려지는 애니메이션을 더해요 */
+.lc{position:relative;height:240px;margin-left:44px}
+.lc::before{content:"";position:absolute;inset:0;background:linear-gradient(var(--line),var(--line)) 0 0/100% 1px no-repeat,linear-gradient(var(--line),var(--line)) 0 50%/100% 1px no-repeat,linear-gradient(var(--line),var(--line)) 0 100%/100% 1px no-repeat}
+.lcy{position:absolute;left:-44px;width:38px;text-align:right;color:var(--muted);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;transform:translateY(-50%)}
+.lcy[style*="bottom"]{transform:translateY(50%)}
+.lcs{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.lca{fill:color-mix(in srgb,var(--blog) 16%,transparent);stroke:none}
+.lcl{fill:none;stroke:var(--blog);stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.lcd{fill:none;stroke:var(--blog);stroke-width:3;stroke-dasharray:5 6;stroke-linecap:round;opacity:.8}
+.lcp{position:absolute;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;cursor:default}
+.lcp::after{content:"";position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:var(--surface);box-shadow:inset 0 0 0 2.5px var(--blog)}
+.lcp.part::after{box-shadow:inset 0 0 0 2.5px var(--soft)}
+.lcp.end::after{width:13px;height:13px;margin:-6.5px 0 0 -6.5px;background:var(--blog);box-shadow:0 0 0 4px color-mix(in srgb,var(--blog) 25%,transparent)}
+.lcx{display:flex;justify-content:space-between;margin:10px 0 0 44px;color:var(--muted);font-size:12.5px;font-weight:600}
+.slh{display:grid;grid-template-columns:52px minmax(0,1fr) 52px;margin-bottom:6px;color:var(--muted);font-size:12.5px;font-weight:800}
+.slh span:first-child{grid-column:1/3;padding-left:52px}.slh span:last-child{grid-column:3;text-align:right}
+.sl{display:grid;grid-template-columns:52px minmax(0,1fr) 52px;height:300px}
+.sla{position:relative}
+.sla span{position:absolute;left:0;right:8px;text-align:right;color:var(--muted);font-size:12px;font-weight:700;transform:translateY(-50%)}
+.sla.r span{left:8px;right:0;text-align:left}
+.slm{position:relative}
+.sls{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.slg{stroke:var(--line);stroke-width:1;stroke-dasharray:2 4}
+.sll{stroke-width:2.5;stroke-linecap:round}
+.sll.up{stroke:var(--good)}.sll.down{stroke:var(--crit)}.sll.same{stroke:var(--soft)}
+.sld{position:absolute;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;cursor:default}
+.sld::after{content:"";position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%}
+.sld.up::after{background:var(--good)}.sld.down::after{background:var(--crit)}.sld.same::after{background:var(--soft)}
+@keyframes wipe{from{clip-path:inset(0 100% 0 0)}}
+@keyframes pop{from{opacity:0;transform:scale(.3)}}
+@keyframes rise{from{transform:scaleY(0)}}
+.play .lcs,.play .sls{animation:wipe 1.1s cubic-bezier(.3,.6,.2,1) both}
+.play .lcp,.play .sld{animation:pop .35s ease-out both;animation-delay:calc(var(--i)*55ms + 250ms)}
+.play .hbars i{transform-origin:bottom;animation:rise .55s cubic-bezier(.3,.6,.2,1) both;animation-delay:calc(var(--i)*22ms)}
+@media (max-width:880px){.lc{height:200px}.sl{height:260px}.slh span:first-child{padding-left:44px}.slh,.sl{grid-template-columns:44px minmax(0,1fr) 44px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="4"/><path d="M10 9.5v5l4.5-2.5z"/></symbol>
+    <symbol id="i-cam" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6"/></symbol>
+    <symbol id="i-at" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M16 12v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-3.5 7.1"/></symbol>
+    <symbol id="i-blog" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 9h10M7 13h10M7 17h6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></symbol>
+    <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <div class="topbar"><button class="menu" id="menuBtn" aria-label="메뉴 열기">☰</button><span class="brand">부동산이즈 SNS 운영실</span></div>
+  <div class="scrim" id="scrim"></div>
+  <aside class="side" id="side">
+    <div class="sidehead"><span class="brand">부동산이즈 SNS 운영실</span></div>
+    <nav class="nav" id="nav" aria-label="채널 메뉴"></nav>
+  </aside>
+  <main class="main"><div class="inner" id="view"></div></main>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+window.claude={use:function(){
+  return fetch('data.json?t='+Date.now()).then(function(r){return r.json()}).then(function(all){
+    function snap(col){
+      var m=all[col]||{};
+      return {docs:Object.keys(m).map(function(id){return {id:id,data:function(){return m[id]}}})};
+    }
+    return {collection:function(col){
+      return {onSnapshot:function(ok){setTimeout(function(){ok(snap(col))},0)}};
+    }};
+  });
+}};
+</script>
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s)};
+  var ic=function(n){return '<svg class="ic"><use href="#i-'+n+'"/></svg>'};
+  var esc=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+  var n=function(x){return Math.round(+x||0).toLocaleString('ko-KR')};
+  var med=function(a){if(!a.length)return 0;var s=a.slice().sort(function(x,y){return x-y}),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2};
+  var r1=function(x){return Math.round(x*10)/10};
+  var DAYS='일월화수목금토';
+  var md=function(d){return (+d.slice(5,7))+'/'+(+d.slice(8,10))};
+
+  /* ---------- 저장소 ---------- */
+  var COLS=['sns','analysis','review','bench','plan'];
+  var DB={sns:{},analysis:{},review:{},bench:{},plan:{}}, LOADED={}, NODB=false;
+  var UI={view:'bl-perf',sort:'d',range:7,plan:{},tab:{}};
+  try{var rg=+localStorage.getItem('isz-range');if(rg===7||rg===30||rg===90)UI.range=rg}catch(e){}
+  try{var h=location.hash.slice(1);if(h)UI.view=h}catch(e){}
+  try{var sv=localStorage.getItem('isz-view');if(!location.hash&&sv)UI.view=sv}catch(e){}
+
+  function withTimeout(p,ms){return Promise.race([p,new Promise(function(r){setTimeout(function(){r('__timeout')},ms)})])}
+  function start(){
+    if(!window.claude||!window.claude.use){NODB=true;render();return}
+    window.claude.use('db').then(function(db){
+      if(!db){NODB=true;render();return}
+      COLS.forEach(function(col){
+        db.collection(col).onSnapshot(function(snap){
+          var o={};snap.docs.forEach(function(d){o[d.id]=d.data()});DB[col]=o;LOADED[col]=true;render(true);
+        },function(){LOADED[col]=true;render(true)});
+      });
+    },function(){NODB=true;render()});
+  }
+  setTimeout(function(){if(!Object.keys(LOADED).length&&!NODB){NODB='late';render()}},16000);
+
+  /* ---------- 공통 조각 ---------- */
+  var TAG={rp:'REPORT',bl:'BLOG',yt:'YOUTUBE',ig:'INSTAGRAM',th:'THREADS'};
+  function head(k,sub,title,big,label){
+    return '<div class="eyebrow"><span class="tag t-'+k+'">'+TAG[k]+'</span><span class="sep"></span><span>'+sub+'</span></div>'
+      +'<h1'+(big==null?' style="margin-bottom:24px"':'')+'>'+title+'</h1>'
+      +(big!=null?'<div class="big"><b>'+big+'</b><span>'+label+'</span></div>':'');
+  }
+  function sec(cls,title,sub){return '<div class="sec"><h2 class="'+cls+'">'+title+'</h2>'+(sub?'<p class="sub">'+sub+'</p>':'')+'</div>'}
+  function empty(title,sub,spin){return '<div class="panel"><div class="plempty">'+(spin?'<span class="spin"></span>':'')+'<b>'+title+'</b>'+(sub?'<span>'+sub+'</span>':'')+'</div></div>'}
+  function waiting(k,title){
+    if(NODB===true) return head(k,'저장소 연결 안 됨',title)+empty('숫자를 불러올 수 없어요','claude.ai에 로그인한 상태로 이 페이지를 열어 주세요.');
+    if(NODB==='late') return head(k,'불러오기 지연',title)+empty('숫자를 아직 못 받았어요','새로고침해도 그대로면 이 화면을 캡처해서 Claude에게 보내 주세요.');
+    return head(k,'불러오는 중',title)+empty('저장소에서 숫자를 불러오는 중이에요','',true);
+  }
+  function postUrl(B,id){return 'https://blog.naver.com/'+encodeURIComponent(B.blog)+'/'+encodeURIComponent(id)}
+  function rk(v,suffix){
+    if(v===''||v==null) return '<span class="rk out">'+(suffix==='m'?'첫 화면 밖':'30위 밖')+'</span>';
+    v=+v;return '<span class="rk '+(v<=3?'top':v<=10?'mid':'out')+'">'+v+'위</span>';
+  }
+
+  /* ---------- 냉정한 성과 진단 (review/bl — 3일마다 자동으로 새로 써서 넣는다) ---------- */
+  function gradeCls(g){g=String(g||'').charAt(0);return g==='A'?'ga':g==='B'?'gb':g==='C'?'gc':g==='D'?'gd':'gh'}
+  function reviewBlock(){
+    if(!LOADED.review) return '';
+    var R=DB.review.bl;
+    if(!R) return '<section class="blk">'+sec('c-crit','냉정한 성과 진단','3일마다 숫자를 새로 읽고 Claude가 쓴소리 분석과 해결책을 여기에 적어요.')+empty('첫 진단을 기다리고 있어요','다음 갱신 때 들어와요.')+'</section>';
+    var h='<section class="blk">'+sec('c-crit','냉정한 성과 진단','Claude 분석 · '+esc(R.date||'')+(R.period?' · '+esc(R.period):'')+' · 다음 진단 '+esc(R.next||'-')+' — 칭찬보다 고칠 점 위주로 적었어요.');
+    h+='<div class="panel"><div class="rvtop"><div class="rvg '+gradeCls(R.grade)+'">'+esc(R.grade||'-')+'<small>종합</small></div><div class="rvh"><b>'+esc(R.headline||'')+'</b>'
+      +((R.verdict||[]).length?'<ul class="rvl">'+R.verdict.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul>':'')+'</div></div></div>';
+    if((R.kpi||[]).length) h+='<div class="rvkpi">'+R.kpi.map(function(x){
+      var pc=x.pct!=null?Math.max(0,Math.min(100,+x.pct)):null;
+      return '<div class="kp"><span class="kl">'+esc(x.k)+'</span><b>'+esc(x.now)+'</b><span class="kt">목표 '+esc(x.target||'-')+(pc!=null?' · 달성 '+Math.round(pc)+'%':'')+'</span>'
+        +(pc!=null?'<div class="kbar"><i class="'+(pc>=80?'h':pc>=50?'m':'')+'" style="width:'+pc+'%"></i></div>':'')+(x.note?'<span class="kn">'+esc(x.note)+'</span>':'')+'</div>'}).join('')+'</div>';
+    if((R.actions||[]).length) h+='<div class="ptitle rvt">숫자를 올리는 해결책</div><div class="rva">'+R.actions.map(function(a,i){
+      return '<article class="panel ra"><div class="rah"><span class="pill '+(i<2?'warn':'off')+'">'+esc(a.goal||'')+'</span><b>'+esc(a.fix||'')+'</b></div>'
+        +(a.problem?'<p class="rap"><span>문제</span>'+esc(a.problem)+'</p>':'')
+        +((a.steps||[]).length?'<ol class="ras">'+a.steps.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ol>':'')
+        +(a.expect?'<p class="rae">기대: '+esc(a.expect)+'</p>':'')+'</article>'}).join('')+'</div>';
+    if((R.posts||[]).length) h+='<div class="ptitle rvt">올린 글 하나씩 — 이랬으면 더 나았다</div><div class="rvp">'+R.posts.map(function(p,i){
+      return '<details class="panel rp"'+(i<2?' open':'')+'><summary><span class="rpg '+gradeCls(p.grade)+'">'+esc(p.grade||'-')+'</span><span class="rpt"><b>'+esc(p.title||'')+'</b><small>'+esc(p.date||'')+(p.stats?' · '+esc(p.stats):'')+'</small></span></summary>'
+        +'<div class="rpb">'+(p.good?'<p><span class="tg ok">잘한 점</span>'+esc(p.good)+'</p>':'')+(p.bad?'<p><span class="tg no">아쉬운 점</span>'+esc(p.bad)+'</p>':'')
+        +(p.better?'<p><span class="tg bt">이랬으면</span>'+esc(p.better)+'</p>':'')+(p.next?'<p><span class="tg nx">다음엔</span>'+esc(p.next)+'</p>':'')
+        +(p.url?'<a href="'+esc(p.url)+'" target="_blank" rel="noopener">원본 보기 ↗</a>':'')+'</div></details>'}).join('')+'</div><p class="rvfoot">등급: A 통합검색 5위 안 · B 통합검색 10위 안 또는 블로그 탭 3위 안 · C 블로그 탭 10위 안 · D 그 밖 · “보류”는 올린 지 3일이 안 돼 순위가 아직 흔들리는 글이에요.</p>';
+    if((R.experiments||[]).length) h+='<div class="ptitle rvt">다음 3일 실험</div><div class="panel"><ol class="ras" style="margin:0">'+R.experiments.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ol></div>';
+    return h+'</section>';
+  }
+
+  /* ---------- 메뉴 ---------- */
+  var SECTIONS=[
+    {k:'rp',name:'주간 보고서',g:'doc',items:[['rp-week','이번 주 요약','doc']]},
+    {k:'bl',name:'네이버 블로그',g:'blog',items:[['bl-perf','내 계정 성과분석','chart'],['bl-admin','관리자 통계','chart'],['bl-insight','분석 · 다음 글 개선안','bulb'],['bl-bench','벤치마킹 · AI 브리핑','search'],['bl-top','많이 찾는 검색어 · 상위 글 30','search'],['bl-trend','트렌드 · 홈 글','bulb'],['bl-plan','자동 기획','pen']]},
+    {k:'yt',name:'유튜브',g:'play',soon:true,items:[['yt-perf','내 계정 성과분석','chart'],['yt-plan','쇼츠 기획','pen']]},
+    {k:'ig',name:'인스타그램',g:'cam',soon:true,items:[['ig-perf','내 계정 성과분석','chart']]},
+    {k:'th',name:'스레드',g:'at',soon:true,items:[['th-perf','내 계정 성과분석','chart'],['th-plan','스레드 기획','pen']]}
+  ];
+  function drawNav(){
+    var h='';
+    SECTIONS.forEach(function(s){
+      h+='<div class="sect"><div class="phead '+s.k+'">'+ic(s.g)+s.name+(s.soon?'<span class="soon">준비 중</span>':'')+'</div>';
+      s.items.forEach(function(it){
+        var on=UI.view===it[0];
+        h+='<button class="item" data-v="'+it[0]+'"'+(on?' aria-current="page"':'')+'>'+ic(it[2])+it[1]+'</button>';
+      });
+      h+='</div>';
+    });
+    $('#nav').innerHTML=h;
+  }
+
+  /* ---------- 블로그 계산 ---------- */
+  // d = 고른 기간(일). 오늘은 아직 집계 중이라 평균·비교에서 빼고, 막대에는 줄무늬로 보여준다.
+  function blogCalc(B,d){
+    d=d||7;
+    var P=(B.posts||[]).slice().sort(function(a,b){return a.d<b.d?1:-1});
+    var V=(B.visitors||[]).slice().sort(function(a,b){return a.date<b.date?-1:1});
+    var today=(B.updated||'').slice(0,10);
+    var full=V.filter(function(v){return v.date<today});
+    var cur=full.slice(-d), prev=full.slice(-2*d,-d);
+    var avg=function(a){return a.length?a.reduce(function(s,v){return s+v.v},0)/a.length:0};
+    var cut=isoAgo(today,d), cut2=isoAgo(today,2*d);
+    var inP=P.filter(function(p){var x=p.d.slice(0,10);return x>cut&&x<=today});
+    var inPrev=P.filter(function(p){var x=p.d.slice(0,10);return x>cut2&&x<=cut});
+    var dates=(B.ranks||[]).map(function(r){return r.date}).filter(function(x,i,a){return a.indexOf(x)===i}).sort();
+    var rd=dates[dates.length-1];
+    // 비교 기준: 기간 시작일 이전의 가장 최근 기록. 없으면 비교하지 않는다.
+    var base=dates.filter(function(x){return x<=cut}).pop()||null;
+    var R=(B.ranks||[]).filter(function(r){return r.date===rd});
+    var Rbase={};if(base)(B.ranks||[]).filter(function(r){return r.date===base}).forEach(function(r){Rbase[r.kw]=r});
+    return {P:P,V:V,today:today,d:d,cur:cur,prev:prev,avgCur:avg(cur),avgPrev:avg(prev),
+      bars:V.filter(function(v){return v.date>cut}),inP:inP,inPrev:inPrev,
+      R:R,Rbase:Rbase,rankBase:base,rankDate:rd,byId:P.reduce(function(o,p){o[p.id]=p;return o},{})};
+  }
+  function monthsBack(k,endYm){var y=+endYm.slice(0,4),m=+endYm.slice(5,7),out=[];for(var i=k-1;i>=0;i--){var mm=m-i,yy=y;while(mm<1){mm+=12;yy--}out.push(yy+'-'+(mm<10?'0':'')+mm)}return out}
+  function pctTag(a,b,label){
+    if(!b)return '<span class="rd">'+label+' 기록 없음</span>';
+    var v=(a-b)/b*100;return '<span class="mv '+(v>=0?'up':'down')+'" style="margin:0">'+(v>=0?'▲':'▼')+Math.abs(v).toFixed(0)+'%</span>';
+  }
+
+  /* =========================================================
+     블로그 · 내 계정 성과분석
+     ========================================================= */
+  function viewBlPerf(){
+    if(!LOADED.sns) return waiting('bl','내 계정 성과분석');
+    var B=DB.sns.bl; if(!B) return head('bl','네이버 블로그','내 계정 성과분석')+empty('아직 블로그 숫자가 없어요','Claude가 수집 도구를 돌리면 여기에 채워져요.');
+    var d=UI.range, C=blogCalc(B,d), P=C.P;
+    var akey=B.updated+'|'+d; UI.playNow=UI.animDone!==akey; UI.akey=akey;
+    var h=head('bl',esc(B.name)+' · '+esc(B.blog),'내 계정 성과분석',n(B.neighbors),'블로그 이웃 · 누적 방문 '+n(B.total_visitors)+'명')
+      +'<div class="ptool"><div class="seg" role="group" aria-label="기간">'+[7,30,90].map(function(x){return '<button type="button" data-range="'+x+'" aria-pressed="'+(x===d)+'">최근 '+x+'일</button>'}).join('')+'</div>'
+      +'<span class="note">직전 '+d+'일과 비교 · 네이버 공개 숫자 · <b>'+esc(B.updated)+'</b> 기준</span></div>';
+
+    // 히어로: 일 방문자
+    var vis=C.bars, mx=Math.max.apply(null,vis.map(function(v){return v.v}).concat([1]));
+    var short=C.cur.length<d;
+    var delta=C.prev.length>=Math.min(d,3)&&C.avgPrev?((C.avgCur-C.avgPrev)/C.avgPrev*100):null;
+    var likesCur=C.inP.map(function(p){return p.l}), likesPrev=C.inPrev.map(function(p){return p.l});
+    var sumK=function(a,k){return a.reduce(function(s,p){return s+(+p[k]||0)},0)};
+    var react=sumK(C.inP,'l')+sumK(C.inP,'cm')+sumK(C.inP,'s'), reactPrev=sumK(C.inPrev,'l')+sumK(C.inPrev,'cm')+sumK(C.inPrev,'s');
+    h+='<div class="hero"><div class="hv">'
+      +'<div class="hl">하루 평균 방문자'+(delta!=null?'<span class="chipw">'+(delta>=0?'▲ ':'▼ ')+Math.abs(delta).toFixed(0)+'%</span><small>직전 '+d+'일 대비</small>':'<small>직전 '+d+'일 기록이 아직 없어요</small>')+'</div>'
+      +'<div class="hn">'+n(C.avgCur)+'<small>명</small></div>'
+      +'<div class="hcap">'+(short?'기록이 '+C.cur.length+'일치뿐이라 '+C.cur.length+'일 평균이에요 · 매일 쌓여요':'최근 '+d+'일 합계 '+n(C.cur.reduce(function(s,v){return s+v.v},0))+'명')+' · 오늘은 지금까지 '+n(B.today_visitors)+'명</div>'
+      +'<div class="hbars" style="gap:'+(vis.length>40?1:vis.length>14?2:4)+'px" role="img" aria-label="일별 방문자">'+vis.map(function(v,vi){
+        var part=v.date===C.today;
+        return '<i class="'+(part?'part':'cur')+'" style="height:'+Math.max(4,Math.round(v.v/mx*100))+'%;--i:'+vi+'" data-tip="'+md(v.date)+'('+DAYS[new Date(v.date).getDay()]+') 방문자 '+n(v.v)+'명'+(part?' · 집계 중':'')+'"></i>'}).join('')+'</div>'
+      +'<div class="hax"><span>'+(vis.length?md(vis[0].date):'')+'</span><span>막대 1개 = 하루 · 줄무늬 = 오늘(집계 중)</span><span>'+(vis.length?md(vis[vis.length-1].date):'')+'</span></div>'
+      +'</div><div class="hs">'
+      +'<div class="hr"><i class="dot"></i><div><div class="rl">올린 글</div><div class="rv">'+C.inP.length+'<small>편</small></div></div><div class="rd">직전 '+d+'일 '+C.inPrev.length+'편</div></div>'
+      +'<div class="hr"><i class="dot b"></i><div><div class="rl">글 1편당 공감 (중앙값)</div><div class="rv">'+(likesCur.length?r1(med(likesCur)):'-')+'<small>개</small></div></div><div class="rd">직전 '+d+'일 '+(likesPrev.length?r1(med(likesPrev))+'개':'글 없음')+'</div></div>'
+      +'<div class="hr"><i class="dot c"></i><div><div class="rl">받은 반응 합계</div><div class="rv">'+n(react)+'<small>회</small></div></div><div class="rd">공감·댓글·공유<br>'+(reactPrev?'직전 '+n(reactPrev)+'회 '+pctTag(react,reactPrev,''):'직전 '+d+'일 반응 없음')+'</div></div>'
+      +'</div></div>';
+
+    h+=trendBlock(C,d)+slopeBlock(C,d);
+    h+=reviewBlock();
+
+    // 검색 순위
+    var mainHit=C.R.filter(function(r){return r.mr!==''}).length;
+    var topBt=C.R.filter(function(r){return r.bt!==''&&+r.bt<=3}).length;
+    h+='<section class="blk">'+sec('c-a','블로그 탭에서는 '+topBt+'개 키워드가 3위 안이지만, 통합검색 첫 화면에는 '+mainHit+'개만 나와요','사람들은 대부분 통합검색 첫 화면만 봐요. 블로그 탭 순위는 그 탭을 누른 사람만 보는 순위예요. '+md(C.rankDate||C.today)+' 확인 · '
+        +(C.rankBase?'▲▼는 '+md(C.rankBase)+'(직전 '+d+'일 시작 무렵) 대비 변화예요.':'순위 변화는 '+d+'일 넘게 기록이 쌓이면 ▲▼로 보여요.'))
+      +'<div class="tablewrap"><table><thead><tr><th>키워드</th><th>통합검색 첫 화면</th><th>블로그 탭</th><th>걸린 우리 글</th></tr></thead><tbody>'
+      +C.R.slice().sort(function(a,b){return rs(a)-rs(b)}).map(function(r){
+        var no=r.mrNo||r.btNo, p=C.byId[no], pv=C.Rbase[r.kw];
+        return '<tr><td style="font-weight:700">'+esc(r.kw)+'</td><td>'+rk(r.mr,'m')+mvTag(pv&&pv.mr,r.mr)+'</td><td>'+rk(r.bt)+mvTag(pv&&pv.bt,r.bt)+'</td>'
+          +'<td class="t">'+(p?'<a href="'+postUrl(B,no)+'" target="_blank" rel="noopener">'+esc(p.t)+'</a><span class="sub2">'+esc(p.d.slice(0,10))+'</span>':'<span class="na">없음</span>')+'</td></tr>';
+      }).join('')+'</tbody></table></div></section>';
+
+    // 발행 리듬: 7·30일은 날짜별, 90일은 주별, 그리고 24개월 흐름
+    var slots=[], step=d===90?7:1, cnt=d===90?13:d;
+    for(var i=cnt-1;i>=0;i--){var end=isoAgo(C.today,i*step), start=isoAgo(C.today,(i+1)*step);
+      var ps=P.filter(function(p){var x=p.d.slice(0,10);return x>start&&x<=end});slots.push({end:end,start:isoAgo(start,-1),n:ps.length,ps:ps})}
+    var smax=Math.max.apply(null,slots.map(function(s){return s.n}).concat([1]));
+    var zero=slots.filter(function(s){return !s.n}).length;
+    h+='<section class="blk">'+sec('c-w',d===90?'최근 13주 중 글을 안 올린 주가 '+zero+'주예요':'최근 '+d+'일 중 글을 안 올린 날이 '+zero+'일이에요',d===90?'막대 1개 = 한 주예요.':'막대 1개 = 하루예요. 빨간 선은 글이 0편인 '+(d===90?'주':'날')+'이에요.')
+      +'<div class="panel"><div class="vb" style="height:150px">'+slots.map(function(s){
+        var lab=step===1?md(s.end)+'('+DAYS[new Date(s.end).getDay()]+')':md(s.start)+'~'+md(s.end);
+        return '<div class="vbc'+(s.n?'':' z')+'" data-tip="'+lab+' · '+s.n+'편'+(s.ps.length?' · '+esc(s.ps.map(function(p){return p.d.slice(11,16)}).join(', ')):'')+'"><span class="vbv">'+(s.n||'')+'</span><i style="height:'+Math.round(s.n/smax*100)+'%"></i></div>'}).join('')+'</div>'
+      +'<div class="vbx">'+slots.map(function(s,i){var every=d===30?5:d===90?3:1;return '<span>'+((cnt-1-i)%every===0?(step===1?md(s.end):md(s.start)):'')+'</span>'}).join('')+'</div>';
+    var endYm=C.today.slice(0,7), months=monthsBack(24,endYm), mc={};
+    P.forEach(function(p){var k=p.d.slice(0,7);mc[k]=(mc[k]||0)+1});
+    var gap=months.slice(-12).filter(function(m){return !mc[m]}).length;
+    var mmax=Math.max.apply(null,months.map(function(m){return mc[m]||0}).concat([1]));
+    h+='<div class="ptitle" style="margin-top:28px">긴 흐름 · 최근 24개월 <span class="note">(기간 버튼과 관계없이 고정 · 최근 12개월 중 글 없는 달 '+gap+'개월)</span></div>'
+      +'<div class="vb dense" style="height:110px">'+months.map(function(m){
+        var c=mc[m]||0;return '<div class="vbc'+(c?'':' z')+(m===endYm?'':' dim')+'" data-tip="'+m.slice(0,4)+'년 '+(+m.slice(5))+'월 · '+c+'편"><span class="vbv">'+(c||'')+'</span><i style="height:'+Math.round(c/mmax*100)+'%"></i></div>'}).join('')+'</div>'
+      +'<div class="vbx">'+months.map(function(m,i){return '<span>'+(i%6===0?m.slice(2,4)+'.'+(+m.slice(5))+'월':'')+'</span>'}).join('')+'</div>'
+      +'<p class="hint">2025년 상반기에는 한 달에 15~26편을 올렸어요. 2025년 12월부터 거의 멈췄다가 2026년 10월에 다시 시작했어요.</p></div></section>';
+
+    // 카테고리별 반응
+    var since='2025-01', cats={};
+    P.filter(function(p){return p.d>=since}).forEach(function(p){(cats[p.c]=cats[p.c]||[]).push(p)});
+    var inPid={};C.inP.forEach(function(p){inPid[p.id]=1});
+    var rows=Object.keys(cats).map(function(c){var a=cats[c];return {c:c,n:a.length,l:med(a.map(function(p){return p.l})),cm:med(a.map(function(p){return p.cm})),recent:a.filter(function(p){return inPid[p.id]}).length}}).sort(function(a,b){return b.l-a.l});
+    var lmax=Math.max.apply(null,rows.map(function(r){return r.l}).concat([1]));
+    h+='<section class="blk">'+sec('','반응이 가장 좋은 카테고리는 “'+esc(rows[0]?rows[0].c:'')+'”예요','2025년 1월 이후 글 기준, 글 1편이 받은 공감의 중앙값이에요. 오른쪽은 최근 '+d+'일 동안 그 카테고리에 올린 글 수예요.')
+      +'<div class="panel">'+rows.map(function(r){
+        return '<div class="ir" data-tip="'+esc(r.c)+' · 글 '+r.n+'편 · 공감 중앙값 '+r1(r.l)+' · 댓글 중앙값 '+r1(r.cm)+'"><div class="in">'+esc(r.c)+'</div><div class="trk'+(r.recent?'':' dim')+'"><i style="width:'+Math.round(r.l/lmax*100)+'%"></i></div><div class="iv">'+r1(r.l)+'</div><div class="ip">글 '+r.n+'편 · 최근 '+d+'일 '+r.recent+'편</div></div>'}).join('')
+      +'<p class="hint">흐린 막대는 최근 '+d+'일 동안 글을 올리지 않은 카테고리예요.</p></div></section>';
+
+    // 글별 반응: 기간 안에 올린 글. 검색 노출 = 그 글이 걸린 키워드 중 가장 높은 순위
+    var list=C.inP.map(function(p){
+      var mr=null,bt=null;
+      C.R.forEach(function(r){
+        if(r.mrNo===p.id&&r.mr!==''&&(mr==null||+r.mr<mr))mr=+r.mr;
+        if(r.btNo===p.id&&r.bt!==''&&(bt==null||+r.bt<bt))bt=+r.bt;
+      });
+      return Object.assign({},p,{mr:mr,bt:bt,best:Math.min(mr==null?99:mr*3,bt==null?99:bt)});
+    });
+    var key=UI.sort; list.sort(function(a,b){if(key==='d')return a.d<b.d?1:-1;if(key==='best')return a.best-b.best||(a.d<b.d?1:-1);return b[key]-a[key]});
+    var sb=function(k,t){return '<button type="button" data-sort="'+k+'" aria-pressed="'+(UI.sort===k)+'">'+t+(UI.sort===k?(k==='best'?' ↑':' ↓'):'')+'</button>'};
+    var ex=function(p){
+      if(p.mr==null&&p.bt==null)return '<span class="rk out">검색 안 잡힘</span>';
+      return (p.mr!=null?'<span class="rk '+(p.mr<=3?'top':p.mr<=10?'mid':'out')+'" title="통합검색 첫 화면">통합 '+p.mr+'위</span> ':'')+(p.bt!=null?'<span class="rk '+(p.bt<=3?'top':p.bt<=10?'mid':'out')+'" title="블로그 탭">블탭 '+p.bt+'위</span>':'');
+    };
+    h+='<section class="blk">'+sec('c-k','최근 '+d+'일 올린 글 '+list.length+'편','네이버는 글별 조회수를 공개하지 않아요. 대신 “검색 노출”에 그 글이 걸린 키워드 중 가장 높은 순위를 보여 줘요(마지막 확인 기준). 제목을 누르면 글이 열려요. 열 이름을 누르면 정렬돼요.')
+      +(list.length?'<div class="tablewrap"><table><thead><tr><th>'+sb('d','올린 날')+'</th><th>제목</th><th>'+sb('best','검색 노출')+'</th><th class="n">'+sb('l','공감')+'</th><th class="n">'+sb('cm','댓글')+'</th><th class="n">'+sb('s','공유')+'</th></tr></thead><tbody>'
+      +list.map(function(p){return '<tr><td class="m">'+esc(p.d.slice(2,10).replace(/-/g,'.'))+' '+esc(p.d.slice(11,16))+'</td><td class="t"><a href="'+postUrl(B,p.id)+'" target="_blank" rel="noopener">'+esc(p.t)+'</a><span class="sub2">'+esc(p.c)+'</span></td>'
+        +'<td style="white-space:nowrap">'+ex(p)+'</td><td class="n">'+n(p.l)+'</td><td class="n">'+n(p.cm)+'</td><td class="n">'+n(p.s)+'</td></tr>'}).join('')
+      +'</tbody></table></div>':empty('이 기간에 올린 글이 없어요','기간을 늘려 보세요.'))+'</section>';
+    return h;
+  }
+  function isoAgo(d,k){var t=new Date(d+'T00:00:00Z');t.setUTCDate(t.getUTCDate()-k);return t.toISOString().slice(0,10)}
+  function rs(r){return (r.mr!==''?+r.mr:100)*1000+(r.bt!==''?+r.bt:100)}
+  function mvTag(prev,cur){
+    if(prev==null)return '';var a=prev===''?99:+prev,b=cur===''?99:+cur;if(a===b)return '';
+    return b<a?'<span class="mv up">▲'+(a===99?'새로':a-b)+'</span>':'<span class="mv down">▼'+(b===99?'밖':b-a)+'</span>';
+  }
+
+  /* =========================================================
+     블로그 · 분석과 다음 글 개선안
+     ========================================================= */
+  var LV={good:'잘하고 있어요',warn:'주의',crit:'바로 고칠 것'};
+
+  /* =========================================================
+     블로그 · 관리자 통계 (네이버 로그인 후에만 보이는 숫자 · 사장님 캡처를 Claude가 옮겨 적음)
+     ========================================================= */
+  function viewBlAdmin(){
+    if(!LOADED.sns) return waiting('bl','관리자 통계');
+    var A=DB.sns.bl_admin;
+    if(!A) return head('bl','관리자 통계','관리자 통계')+empty('아직 관리자 통계가 없어요','블로그 관리 → 내 블로그 통계 화면을 캡처해서 Claude에게 보내면 여기에 채워져요.');
+    var W=A.weekly||[], last=W[W.length-1]||{total:0,from:'',to:''};
+    var avg3=function(a){return a.length?a.reduce(function(s,w){return s+w.total},0)/a.length:0};
+    var first=avg3(W.slice(0,3)), now=avg3(W.slice(-3));
+    var chg=first?Math.round((now-first)/first*100):0;
+    var sumT=W.reduce(function(s,w){return s+w.total},0), sumN=W.reduce(function(s,w){return s+w.neighbor+w.mutual},0);
+    var h=head('bl','네이버 관리자 통계 · '+esc(A.captured)+' 캡처','관리자 통계',n(last.total),'지난주 조회수 ('+md(last.from)+'~'+md(last.to)+', 하루 평균 '+n(last.total/7)+'회)');
+
+    var wmax=Math.max.apply(null,W.map(function(w){return w.total}).concat([1]));
+    h+='<section class="blk first">'+sec('c-w','글이 뜸했던 동안 주간 조회수가 '+(chg<0?Math.abs(chg)+'% 줄었어요':chg+'% 늘었어요'),md(W[0].from)+' 첫 3주 평균 '+n(first)+'회 → 최근 3주 평균 '+n(now)+'회예요. 이 표에는 새 글을 올리기 시작한 10/19 이후가 아직 없어서, 새 글 효과는 다음 주 캡처부터 보여요.')
+      +'<div class="panel"><div class="vb" style="height:150px">'+W.map(function(w,i){
+        return '<div class="vbc'+(i===W.length-1?'':' dim')+'" data-tip="'+md(w.from)+'~'+md(w.to)+' · 조회수 '+n(w.total)+' (이웃 '+(w.neighbor+w.mutual)+', 이웃 아닌 사람 '+n(w.other)+')"><span class="vbv">'+n(w.total)+'</span><i style="height:'+Math.round(w.total/wmax*100)+'%"></i></div>'}).join('')+'</div>'
+      +'<div class="vbx">'+W.map(function(w,i){return '<span>'+(i%2===(W.length-1)%2?md(w.from):'')+'</span>'}).join('')+'</div>'
+      +'<p class="hint">최근 '+W.length+'주 조회수 '+n(sumT)+'회 중 <b>이웃(피이웃·서로이웃)이 낸 조회수는 '+n(sumN)+'회, '+(sumN/sumT*100).toFixed(1)+'%</b>뿐이에요. 나머지는 이웃이 아닌 사람, 즉 검색으로 온 사람이에요.</p></div></section>';
+
+    var I=A.inflow||{channels:[]}, ch=I.channels||[], g=ch.filter(function(c){return c.name==='Google'})[0];
+    var gp=g?g.pct:0;
+    h+='<section class="blk">'+sec('c-a','방문자의 '+Math.round(gp)+'%가 구글에서 와요. 네이버는 '+Math.round(100-gp)+'%예요',md(I.date)+' 하루치 유입경로예요(약 '+I.visits+'회). 하루치라서 방향만 참고하세요. 네이버 순위만 보고 글을 평가하면 실제 방문자의 3분의 1만 보는 셈이에요.')
+      +'<div class="panel">'+ch.map(function(c){
+        var gg=c.name==='Google';
+        return '<div style="display:grid;grid-template-columns:minmax(110px,190px) minmax(0,1fr) 92px;gap:14px;align-items:center;padding:11px 0;border-top:1px solid var(--line)"><div class="in">'+esc(c.name)+'</div><div class="trk"><i style="width:'+Math.round(c.pct/gp*100)+'%;background:'+(gg?'var(--accent)':'var(--blog)')+'"></i></div><div class="note" style="text-align:right"><b>'+c.pct.toFixed(1)+'%</b> · 약 '+Math.round(c.pct/100*I.visits)+'회</div></div>'}).join('')+'</div></section>';
+
+    var K=A.search_kw||[], KT={new:'새 글 주제',agent:'중개 실무',info:'일반 정보'}, kn=K.reduce(function(s,k){return s+k.n},0);
+    var by=function(t){return K.filter(function(k){return k.tag===t}).reduce(function(s,k){return s+k.n},0)};
+    h+='<section class="blk">'+sec('','네이버 검색으로 들어온 '+kn+'명 중 '+by('agent')+'명은 중개 실무를 검색했어요',md(I.date)+' 하루치 검색어예요. 새 글 주제로 들어온 사람은 '+by('new')+'명, 일반 정보는 '+by('info')+'명이에요. 숫자가 작아서 방향만 참고하세요.')
+      +'<div class="tablewrap"><table><thead><tr><th>검색어</th><th>종류</th><th class="n">방문</th></tr></thead><tbody>'
+      +K.map(function(k){return '<tr><td style="font-weight:700">'+esc(k.kw)+'</td><td><span class="rk '+(k.tag==='agent'?'top':k.tag==='new'?'mid':'out')+'">'+KT[k.tag]+'</span></td><td class="n">'+k.n+'회</td></tr>'}).join('')
+      +'</tbody></table></div><p class="hint">구글로 들어온 사람의 검색어는 네이버가 알려 주지 않아요.</p></section>';
+
+    var Q=A.age||{rows:[]}, R=Q.rows, rmax=Math.max.apply(null,R.map(function(r){return Math.max(r[1],r[2])}).concat([1]));
+    var tot=Q.male+Q.female, mid=R.filter(function(r){return r[0]==='25-29'||r[0]==='30-34'||r[0]==='35-39'}).reduce(function(s,r){return s+r[1]+r[2]},0);
+    h+='<section class="blk">'+sec('c-k','25~39세가 '+(mid/tot*100).toFixed(0)+'%, 남성이 '+(Q.male/tot*100).toFixed(0)+'%예요',Q.month.slice(0,4)+'년 '+(+Q.month.slice(5))+'월 조회수 기준이에요. 네이버가 성별·연령을 알 수 있는 조회수 '+n(tot)+'회만 센 숫자라, 전체 조회수보다 적어요. 직업은 알 수 없어서 누구인지는 추정이에요.')
+      +'<div class="panel"><p class="note" style="margin:0 0 8px"><span style="color:var(--accent)">■</span> 남 '+n(Q.male)+'회 &nbsp; <span style="color:var(--ig)">■</span> 여 '+n(Q.female)+'회</p>'
+      +R.map(function(r){return '<div style="display:grid;grid-template-columns:56px minmax(0,1fr) 78px;gap:12px;align-items:center;padding:7px 0;border-top:1px solid var(--line)"><div class="in" style="font-size:13.5px">'+esc(r[0].replace('-','~').replace(/~$/,'세 이상'))+'</div>'
+        +'<div><div class="trk" style="height:8px;margin-bottom:4px"><i style="width:'+Math.round(r[1]/rmax*100)+'%;background:var(--accent)"></i></div><div class="trk" style="height:8px"><i style="width:'+Math.round(r[2]/rmax*100)+'%;background:var(--ig)"></i></div></div>'
+        +'<div class="note" style="text-align:right">'+r[1]+' / '+r[2]+'</div></div>'}).join('')
+      +'<p class="hint">남성은 25~39세가 가장 많고, 여성은 50~54세가 가장 많아요. 젊은 예비 창업자·초보 중개사와 50대 현직 중개사가 섞여 있을 가능성이 있어요(추정).</p></div></section>';
+    return h;
+  }
+  function viewBlInsight(){
+    if(!LOADED.analysis) return waiting('bl','분석 · 다음 글 개선안');
+    var A=DB.analysis.bl;
+    if(!A) return head('bl','분석','분석 · 다음 글 개선안')+empty('아직 분석이 없어요','Claude가 숫자를 읽고 분석을 넣으면 여기에 보여요.');
+    var V=A.verdicts||[], cnt={good:0,warn:0,crit:0};V.forEach(function(v){cnt[v.level]=(cnt[v.level]||0)+1});
+    var h=head('bl','분석 '+esc(A.updated)+' · 다음 분석 '+esc(A.next_review||'-'),'분석 · 다음 글 개선안')
+      +'<div class="verdict-hero"><div class="vh1">한 줄 결론</div><div class="vh2">'+esc(A.headline)+'</div><p>'+esc(A.summary)+'</p>'
+      +'<div class="vcount"><span>바로 고칠 것 '+cnt.crit+'</span><span>주의 '+cnt.warn+'</span><span>잘하고 있어요 '+cnt.good+'</span></div></div>'
+      +'<p class="note" style="margin:12px 2px 0">근거: '+esc(A.based_on||'')+'</p>';
+    var order={crit:0,warn:1,good:2};
+    h+='<section class="blk">'+sec('c-k','숫자가 말해 주는 것 '+V.length+'가지','위험한 것부터 보여요. 회색 칸은 숫자, 그 아래는 그 숫자가 무슨 뜻인지예요.')
+      +'<div class="verd">'+V.slice().sort(function(a,b){return order[a.level]-order[b.level]}).map(function(v){
+        return '<article class="vc '+v.level+'"><span class="pill '+v.level+'">'+LV[v.level]+'</span><h3>'+esc(v.title)+'</h3><div class="fact">'+esc(v.fact)+'</div><p>'+esc(v.meaning)+'</p></article>'}).join('')+'</div></section>';
+    h+='<section class="blk">'+sec('c-a','다음 글부터 바꿀 것 '+(A.actions||[]).length+'가지','효과가 큰 순서예요. 위에서부터 하나씩 적용해 보세요.')
+      +'<div class="acts">'+(A.actions||[]).map(function(a,i){
+        return '<div class="act"><div class="no">'+(i+1)+'</div><div><h3>'+esc(a.title)+'</h3><p>'+esc(a.how)+'</p>'+(a.expect?'<div class="ex">기대 효과 · <b>'+esc(a.expect)+'</b></div>':'')+'</div></div>'}).join('')+'</div></section>';
+    h+='<section class="blk"><div class="two">'
+      +'<div>'+sec('','발행 전 체크리스트','글을 올리기 전에 하나씩 체크하세요. 체크 표시는 이 브라우저에만 남아요.')
+      +'<div class="panel chk" id="chk">'+(A.checklist||[]).map(function(c,i){return '<label><input type="checkbox" id="chk'+i+'" data-i="'+i+'"'+(CHK[i]?' checked':'')+'><span>'+esc(c)+'</span></label>'}).join('')
+      +'<div style="margin-top:10px"><button class="bm-btn" type="button" id="chkReset">체크 모두 지우기</button></div></div></div>'
+      +'<div>'+sec('','다음에 쓸 글 제안','숫자에서 나온 주제예요. 제목은 그대로 써도 되고 고쳐도 돼요.')
+      +'<div class="tpc">'+(A.topics||[]).map(function(t){return '<div class="tp"><b>'+esc(t.title)+'</b><span class="kw">'+esc(t.kw)+'</span><span>'+esc(t.why)+'</span></div>'}).join('')+'</div></div>'
+      +'</div></section>';
+    return h;
+  }
+  var CHK={};try{CHK=JSON.parse(localStorage.getItem('isz-chk')||'{}')}catch(e){}
+
+  /* =========================================================
+     연결 전 채널
+     ========================================================= */
+  var PLAN={
+    yt:{name:'유튜브',color:'var(--yt)',state:'채널 확정 대기',
+      have:'구독자 수, 영상별 조회수·좋아요·댓글, 올린 날짜 (지금도 공개 데이터로 가능)',
+      plus:'채널 주인 구글 계정을 한 번 연결하면 시청 시간, 평균 시청 비율, 유입 경로(검색·추천·외부), 구독 전환까지 자동으로 들어와요. YouTube Analytics API, 무료.',
+      steps:['교수님과 채널을 정하기 (기존 네오비TV 유지 또는 새 채널)','정해지면 Claude에게 채널 주소 알려주기','채널 주인 구글 계정으로 연결 허용 한 번 누르기 (Claude가 화면 안내)']},
+    ig:{name:'인스타그램',color:'var(--ig)',state:'계정 만들기 전',
+      have:'계정이 생기면 게시물·릴스별 조회수, 도달, 좋아요, 댓글, 저장, 공유, 팔로워 변화, 팔로워 활동 시간까지 자동으로 들어와요.',
+      plus:'Meta 공식 API로 가져와요. 무료예요. 단, 계정을 <b>비즈니스 계정</b>으로 바꾸고 <b>페이스북 페이지</b>와 연결해야 해요.',
+      steps:['인스타그램 계정 만들기 (회사 이메일 사용 추천)','설정 → 계정 유형 → 비즈니스 계정으로 전환','페이스북 페이지 만들고 인스타 계정과 연결','Claude가 Meta 개발자 앱 설정을 화면 보며 안내']},
+    th:{name:'스레드',color:'var(--th)',state:'계정 만들기 전',
+      have:'계정이 생기면 글별 조회수, 좋아요, 답글, 리포스트, 인용, 팔로워 변화가 자동으로 들어와요.',
+      plus:'Threads 공식 API로 가져와요. 무료예요. 인스타그램 계정으로 스레드에 가입하면 같은 Meta 앱에서 한 번에 연결돼요.',
+      steps:['인스타그램 계정을 먼저 만들기','그 계정으로 스레드 가입','인스타 연결할 때 스레드 권한도 같이 허용']}
+  };
+  function viewSoon(k){
+    var S=PLAN[k];
+    return head(k,S.state,S.name+' 성과분석')
+      +'<div class="panel" style="margin-bottom:18px"><span class="pill off">'+esc(S.state)+'</span><div class="ptitle" style="margin-top:12px">연결되면 보이는 것</div><p class="hint" style="margin:0">'+S.have+'</p><p class="hint">'+S.plus+'</p></div>'
+      +'<div class="panel"><div class="ptitle">연결 순서</div><ol class="steps">'+S.steps.map(function(s){return '<li>'+esc(s)+'</li>'}).join('')+'</ol>'
+      +'<p class="hint">블로그 화면과 같은 구성(큰 숫자 → 순위·추세 → 콘텐츠별 표 → 분석과 개선안)으로 채워질 거예요.</p></div>';
+  }
+
+  /* =========================================================
+     주간 보고서
+     ========================================================= */
+  function viewWeek(){
+    if(!LOADED.sns||!LOADED.analysis) return waiting('rp','이번 주 요약');
+    var B=DB.sns.bl, A=DB.analysis.bl;
+    if(!B) return head('rp','주간 보고서','이번 주 요약')+empty('아직 숫자가 없어요','');
+    var C=blogCalc(B,7), wk=C.inP;
+    var vsum=C.cur.reduce(function(s,v){return s+v.v},0);
+    var h=head('rp',esc(isoAgo(C.today,6).slice(5).replace('-','/'))+' ~ '+esc(C.today.slice(5).replace('-','/')),'이번 주 요약');
+    h+='<div class="chs">'
+      +'<div class="ch"><div class="chh"><span class="chn"><i class="sq" style="background:var(--blog)"></i>네이버 블로그</span><span class="pill good">운영 중</span></div>'
+      +'<div class="kv"><div><span>올린 글</span><b>'+wk.length+'편</b></div><div><span>방문자 '+C.cur.length+'일</span><b>'+n(vsum)+'</b></div>'
+      +'<div><span>글당 공감</span><b>'+r1(med(wk.map(function(p){return p.l})))+'</b></div><div><span>통합검색 노출</span><b>'+C.R.filter(function(r){return r.mr!==''}).length+'/'+C.R.length+'</b></div></div>'
+      +'<button class="bm-btn" type="button" data-v="bl-perf">자세히 보기</button></div>';
+    ['yt','ig','th'].forEach(function(k){var S=PLAN[k];
+      h+='<div class="ch"><div class="chh"><span class="chn"><i class="sq" style="background:'+S.color+'"></i>'+S.name+'</span><span class="pill off">'+esc(S.state)+'</span></div><div class="off">'+esc(S.steps[0])+'</div><button class="bm-btn" type="button" data-v="'+k+'-perf">연결 순서 보기</button></div>'});
+    h+='</div>';
+    h+='<section class="blk">'+sec('c-k','이번 주 올린 글 '+wk.length+'편','공감·댓글·공유는 '+esc(B.updated)+' 기준이에요.')
+      +(wk.length?'<div class="tablewrap"><table><thead><tr><th>올린 시각</th><th>제목</th><th class="n">공감</th><th class="n">댓글</th><th class="n">공유</th></tr></thead><tbody>'
+      +wk.map(function(p){return '<tr><td class="m">'+md(p.d)+'('+DAYS[new Date(p.d.slice(0,10)).getDay()]+') '+esc(p.d.slice(11,16))+'</td><td class="t"><a href="'+postUrl(B,p.id)+'" target="_blank" rel="noopener">'+esc(p.t)+'</a></td><td class="n">'+n(p.l)+'</td><td class="n">'+n(p.cm)+'</td><td class="n">'+n(p.s)+'</td></tr>'}).join('')
+      +'</tbody></table></div>':empty('이번 주에 올린 글이 없어요',''))+'</section>';
+    if(A){
+      h+='<section class="blk">'+sec('c-a','다음 주에 꼭 할 일 3가지','블로그 분석에서 효과가 큰 것만 골랐어요.')
+        +'<div class="acts">'+(A.actions||[]).slice(0,3).map(function(a,i){return '<div class="act"><div class="no">'+(i+1)+'</div><div><h3>'+esc(a.title)+'</h3><p>'+esc(a.how)+'</p></div></div>'}).join('')+'</div>'
+        +'<p class="hint"><button class="bm-btn" type="button" data-v="bl-insight">분석 전체 보기</button></p></section>';
+    }
+    return h;
+  }
+
+
+  /* =========================================================
+     벤치마킹 · AI 브리핑 (bench/bl — 매일 17시 수집 + Claude 해석)
+     ========================================================= */
+  function viewBench(){
+    if(!LOADED.bench) return waiting('bl','벤치마킹 · AI 브리핑');
+    var B=DB.bench.bl;
+    if(!B) return head('bl','벤치마킹','벤치마킹 · AI 브리핑')+empty('아직 벤치마킹 자료가 없어요','매일 17시 수집 때 들어와요.');
+    var A=B.analysis||{}, K=B.keywords||[];
+    var h=head('bl','벤치마킹 '+esc(B.date)+(B.prev_date?' · 어제 대비 변화는 '+md(B.prev_date)+' 기록 기준':''),'벤치마킹 · AI 브리핑',B.ai_ours+' / '+B.ai_present,'AI 브리핑이 우리 글을 인용한 검색어 / AI 브리핑이 나온 검색어');
+    h+='<div class="verdict-hero"><div class="vh1">한 줄 결론</div><div class="vh2">'+esc(A.headline||'')+'</div>'
+      +((A.summary||[]).map(function(x){return '<p>'+esc(x)+'</p>'}).join(''))+'</div>';
+    if(A.patterns){var P=A.patterns,items=[].concat(P.format||[],P.hooks||[]);
+      h+='<section class="blk">'+sec('c-ai','AI 브리핑이 인용하는 글의 모양','검색 화면의 AI 답변과 출처를 읽고 정리했어요.')
+        +'<div class="panel"><ul class="steps">'+items.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul>'+((P.notes||[]).map(function(x){return '<p class="hint">'+esc(x)+'</p>'}).join(''))+'</div></section>';}
+    h+='<section class="blk">'+sec('c-k','검색어 '+K.length+'개를 매일 확인해요','검색어를 누르면 AI 브리핑 출처와 블로그 탭 상위 글(공감·댓글)이 열려요. 초록 칸은 우리 글이에요. “+n”은 전날 기록 대비 늘어난 수예요.');
+    var me=(DB.sns.bl&&DB.sns.bl.blog)||'budongsan-is';
+    K.forEach(function(k){
+      var ai=k.ai||{}, top=k.top||[], mine=top.filter(function(t){return t.ours}).map(function(t){return t.rank});
+      h+='<details class="panel kwc"'+(ai.ours?' open':'')+'><summary><b>'+esc(k.kw)+'</b>'
+        +(ai.present?'<span class="pill '+(ai.ours?'good':'warn')+'">AI 브리핑 '+(ai.ours?'우리 글 인용':'인용 안 됨')+'</span>':'<span class="pill off">AI 브리핑 없음</span>')
+        +'<span class="pill '+(mine.length?'good':'off')+'">블로그 탭 '+(mine.length?'우리 글 '+Math.min.apply(null,mine)+'위':'우리 글 10위 밖')+'</span></summary><div class="kwb">';
+      if(ai.present){
+        h+='<div class="ptitle">AI 브리핑 출처 '+(ai.sources||[]).length+'곳</div><div class="srcs">'+(ai.sources||[]).map(function(s){
+          var m=s.url.indexOf('blog.naver.com/'+me+'/')>=0;
+          return '<a class="srcc'+(m?' ours':'')+'" href="'+esc(s.url)+'" target="_blank" rel="noopener">'+esc(s.n)+'. '+esc(s.name||s.url.split('/')[2])+(m?' · 우리 글':'')+'</a>'}).join('')+'</div>'
+          +(ai.answer?'<details><summary class="note" style="cursor:pointer;margin-bottom:8px">AI 답변 앞부분 보기</summary><div class="aians">'+esc(ai.answer)+'</div></details>':'');
+      }
+      h+='<div class="ptitle" style="margin-top:6px">블로그 탭 상위 '+top.length+'개</div><div class="tablewrap"><table><thead><tr><th>순위</th><th>제목</th><th>올린 날</th><th class="n">공감</th><th class="n">댓글</th></tr></thead><tbody>'
+        +top.map(function(t){return '<tr'+(t.ours?' class="ours"':'')+'><td class="m">'+t.rank+'위</td><td class="t"><a href="'+esc(t.url)+'" target="_blank" rel="noopener">'+esc(t.title||'(글 정보를 못 읽음)')+'</a><span class="sub2">'+esc(t.blog)+(t.ours?' · 우리 글':'')+'</span></td>'
+          +'<td class="m">'+esc((t.date||'').slice(5,10).replace('-','/'))+'</td><td class="n">'+(t.likes==null?'<span class="na">-</span>':n(t.likes)+(t.d_likes>0?'<span class="dd">+'+t.d_likes+'</span>':''))+'</td><td class="n">'+(t.comments==null?'<span class="na">-</span>':n(t.comments)+(t.d_comments>0?'<span class="dd">+'+t.d_comments+'</span>':''))+'</td></tr>'}).join('')
+        +'</tbody></table></div></div></details>';
+    });
+    return h+'</section>';
+  }
+
+  /* =========================================================
+     많이 찾는 검색어 · 상위 글 30 (bench/top — tools/top_posts.py 수집 + Claude 해석, 2026-10-31 추가)
+     ========================================================= */
+  function viewTop(){
+    if(!LOADED.bench) return waiting('bl','많이 찾는 검색어 · 상위 글 30');
+    var T=DB.bench.top;
+    if(!T) return head('bl','검색어·상위 글','많이 찾는 검색어 · 상위 글 30')+empty('아직 자료가 없어요','Claude가 tools/top_posts.py를 돌리면 들어와요.');
+    var A=T.analysis||{}, V=T.volumes||[], P=T.top||[], S=T.summary||{};
+    var h=head('bl','수집 '+esc(T.updated||T.date),'많이 찾는 검색어 · 상위 글 30',S.ours+' / '+S.posts,'검색량 상위 '+(P.length/3|0)+'개 검색어의 블로그 탭 1~3위 글 중 우리 글');
+    h+='<div class="verdict-hero"><div class="vh1">한 줄 결론</div><div class="vh2">'+esc(A.headline||'')+'</div>'+(A.summary||[]).map(function(x){return '<p>'+esc(x)+'</p>'}).join('')+'</div>';
+    var vmax=Math.max.apply(null,V.map(function(v){return v.total||0}).slice(1).concat([1]));
+    h+='<section class="blk">'+sec('c-a','사람들이 많이 찾는 검색어 '+V.length+'개','네이버 월간 검색량(PC+모바일, 검색광고 키워드도구 숫자) 많은 순이에요. 오른쪽은 블로그 탭에서 우리 글 순위(30위 안)예요. 맨 위 “공인중개사 시험”은 너무 커서 막대 길이를 잘랐어요.')
+      +'<div class="panel">'+V.map(function(v){var w=Math.min(100,Math.round((v.total||0)/vmax*100));
+        return '<div class="ir t1" data-tip="'+esc(v.kw)+' · PC '+n(v.pc)+' · 모바일 '+n(v.mo)+'"><div class="in">'+esc(v.kw)+'</div><div class="trk'+(v.ours_rank?'':' dim')+'"><i style="width:'+w+'%"></i></div><div class="iv">'+(v.total==null?'-':n(v.total))+'</div><div class="ip">'+(v.ours_rank?'<span class="rk '+(v.ours_rank<=3?'top':v.ours_rank<=10?'mid':'out')+'">우리 '+v.ours_rank+'위</span>':'<span class="na">우리 글 없음</span>')+'</div></div>'}).join('')
+      +'<p class="hint">흐린 막대는 블로그 탭 30위 안에 우리 글이 없는 검색어예요.</p></div></section>';
+    var F=A.findings||[], order={crit:0,warn:1,good:2};
+    if(F.length) h+='<section class="blk">'+sec('c-k','상위 글 30개에서 보이는 것 '+F.length+'가지','회색 칸은 숫자, 그 아래는 그 숫자가 무슨 뜻인지예요.')
+      +'<div class="verd">'+F.slice().sort(function(a,b){return order[a.level]-order[b.level]}).map(function(v){
+        return '<article class="vc '+v.level+'"><span class="pill '+v.level+'">'+LV[v.level]+'</span><h3>'+esc(v.title)+'</h3><div class="fact">'+esc(v.fact)+'</div><p>'+esc(v.meaning)+'</p></article>'}).join('')+'</div></section>';
+    if((A.apply||[]).length) h+='<section class="blk">'+sec('c-a','글에 바로 쓸 것 '+A.apply.length+'가지','')
+      +'<div class="acts">'+A.apply.map(function(a,i){return '<div class="act"><div class="no">'+(i+1)+'</div><div><h3>'+esc(a.title)+'</h3><p>'+esc(a.how)+'</p></div></div>'}).join('')+'</div></section>';
+    var yes=function(b){return b?'<span class="pill good" style="padding:1px 7px">O</span>':'<span class="na">-</span>'};
+    h+='<section class="blk">'+sec('c-k','상위 노출 글 '+P.length+'개','검색어마다 블로그 탭 1~3위예요. 제목을 누르면 글이 열려요. “앞”은 제목 앞쪽에 검색어가 있는지예요. 정보를 못 읽은 글은 그 블로그의 최근 글 목록 밖에 있는 글이에요.')
+      +'<div class="tablewrap"><table><thead><tr><th>검색어</th><th>순위</th><th>제목</th><th>올린 날</th><th class="n">공감</th><th class="n">댓글</th><th>앞</th><th>숫자</th></tr></thead><tbody>'
+      +P.map(function(t){return '<tr'+(t.ours?' class="ours"':'')+'><td class="m">'+esc(t.kw)+'</td><td class="m">'+t.rank+'위</td><td class="t"><a href="'+esc(t.url)+'" target="_blank" rel="noopener">'+esc(t.title||'(글 정보를 못 읽음)')+'</a><span class="sub2">'+esc(t.blog)+(t.category?' · '+esc(t.category):'')+'</span></td>'
+        +'<td class="m">'+esc((t.date||'').slice(5,10).replace('-','/'))+'</td><td class="n">'+(t.likes==null?'<span class="na">-</span>':n(t.likes))+'</td><td class="n">'+(t.comments==null?'<span class="na">-</span>':n(t.comments))+'</td>'
+        +'<td>'+(t.title?yes(t.front):'')+'</td><td>'+(t.title?yes(t.num):'')+'</td></tr>'}).join('')+'</tbody></table></div></section>';
+    if((A.notes||[]).length) h+='<section class="blk"><div class="panel"><div class="ptitle">이 숫자의 한계</div><ul class="steps">'+A.notes.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul></div></section>';
+    return h;
+  }
+
+  /* =========================================================
+     자동 기획 (plan/bl · plan/yt · plan/th)
+     ========================================================= */
+  var PLAN_NAME={bl:['블로그','제목 3안','원고 구성','구성 복사'],yt:['쇼츠','훅 문장 3개','쇼츠 대본','대본 복사'],th:['스레드','첫 문장 3개','스레드 글','글 복사']};
+  var SRCK={ai:['AI 브리핑 근거','k-ai'],trend:['검색·트렌드','k-trend'],my:['내 계정 근거','k-my'],bm:['벤치마킹','k-ai']};
+  function viewPlan(k){
+    var L=PLAN_NAME[k]||PLAN_NAME.bl;
+    if(!LOADED.plan) return waiting(k,'자동 기획');
+    var P=DB.plan[k];
+    if(!P||!P.topics||!P.topics.length) return head(k,L[0]+' 기획','자동 기획')+empty(k==='bl'?'첫 기획을 기다리고 있어요':L[0]+' 기획은 채널이 정해진 뒤에 열려요','교수님 회의에서 채널이 정해지면 벤치마킹 검색어를 정하고 블로그와 같은 방식으로 채워요.');
+    var i=UI.plan[k]; if(i==null||!P.topics[i]) i=UI.plan[k]=0;
+    var h=head(k,'콘텐츠 기획 · '+esc(P.scope_label||''),'자동 기획')
+      +sec('c-ai','근거가 있는 주제 '+P.topics.length+'개를 모았어요',esc(P.date||'')+' 기준 · 주제를 누르면 '+L[1]+'와 '+L[2]+'가 보여요. 범위는 회의 결과에 따라 바뀌어요.');
+    h+='<div class="plgrid"><div class="plist">'+P.topics.map(function(t,j){var s=(t.src&&t.src.kind)||'ai';
+      return '<button type="button" class="plrow '+(SRCK[s]||SRCK.ai)[1]+'" data-plan="'+j+'" aria-pressed="'+(j===i)+'"><b>'+esc(t.title)+'</b><span>'+esc((t.src&&t.src.label)||(SRCK[s]||SRCK.ai)[0])+(t.volume?' · 월 검색 '+n(t.volume):'')+'</span></button>'}).join('')+'</div>';
+    var t=P.topics[i], tab=UI.tab[k+i]||0, V=t.versions||[], v=V[tab]||V[0];
+    h+='<div class="pldetail"><div class="plt2">'+esc(t.title)+'</div>'
+      +(V.length>1?'<div class="seg" role="group" aria-label="버전">'+V.map(function(x,j){return '<button type="button" data-ptab="'+j+'" aria-pressed="'+(j===tab)+'">'+String.fromCharCode(65+j)+'</button>'}).join('')+'</div>':'')
+      +(t.why?'<div class="plref"><b>근거</b> — '+esc(t.why)+'</div>':'')
+      +(t.keyword?'<div class="kwchips"><span>메인 키워드 '+esc(t.keyword)+'</span>'+(t.volume?'<span>월 검색 '+n(t.volume)+'</span>':'')+(t.sub_keywords||[]).map(function(x){return '<span class="s">'+esc(x)+'</span>'}).join('')+'</div>':'')
+      +'<h3 class="plh3">'+L[1]+'</h3>'+(t.titles||[]).map(function(x,j){return '<div class="plhook"><em>'+(j+1)+'</em><span>'+esc(x)+'</span>'+(j===(t.best_hook||0)?'<i>추천</i>':'')+'</div>'}).join('');
+    if(v) h+='<h3 class="plh3">'+L[2]+' '+String.fromCharCode(65+tab)+(v.name?' · '+esc(v.name.replace(/^[A-C]\s*[—-]\s*/,'')):'')+'</h3><div class="outl">'+(v.lines||[]).map(function(x){var m=String(x).match(/^(.{1,30}?)\s*[:：]\s*(.+)$/);return m?'<div><b>'+esc(m[1])+'</b><span>'+esc(m[2])+'</span></div>':'<div><b>·</b><span>'+esc(x)+'</span></div>'}).join('')+'</div>';
+    if(t.checks) h+='<h3 class="plh3">발행 전 체크</h3><div class="chks"><div class="ok"><b>해도 되는 것</b><ul>'+(t.checks['do']||[]).map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul></div><div class="no"><b>피해야 할 것</b><ul>'+(t.checks.avoid||[]).map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul></div></div>';
+    if(t.thumbnail) h+='<h3 class="plh3">썸네일 문구</h3><div class="plref" style="background:var(--surface2)">'+esc(t.thumbnail)+'</div>';
+    h+='<div style="margin-top:20px"><button type="button" class="bm-btn pri" id="plCopy" data-k="'+k+'">'+L[3]+'</button></div></div></div>';
+    return h;
+  }
+  function copyText(t){try{navigator.clipboard.writeText(t)}catch(e){var a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(_){}a.remove()}}
+
+
+  /* =========================================================
+     트렌드 · 홈 글 (bench/tr — 주제와 상관없이 지금 뜨는 글·검색어, 매일 17시 수집)
+     ========================================================= */
+  function viewTrend(){
+    if(!LOADED.bench) return waiting('bl','트렌드 · 홈 글');
+    var T=DB.bench.tr;
+    if(!T) return head('bl','트렌드','트렌드 · 홈 글')+empty('아직 트렌드 자료가 없어요','매일 17시 수집 때 들어와요.');
+    var I=T.ideas||{}, G=T.google||[], tr=(T.traits||[]);
+    var h=head('bl','트렌드 '+esc(T.date),'트렌드 · 홈 글',n(T.feed_total),'지금 네이버 블로그 홈에 보이는 글 수 (한 번에 보이는 양이 이 정도예요)');
+    h+='<div class="verdict-hero"><div class="vh1">주제와 상관없이 지금 뜨는 것에서 구조를 가져와요</div><div class="vh2">소재는 연예·여행·소비가 많아서 그대로 따라 하지 않고, 제목과 글 구조만 이즈 주제로 바꿔요</div><p>'+esc(I.basis||'')+'</p></div>';
+    if((I.items||[]).length) h+='<section class="blk">'+sec('c-ai','이즈에 응용할 수 있는 구조 '+I.items.length+'가지','Claude가 홈 글 상위권에서 반복되는 구조를 골라, 이즈 주제로 바꾼 예시예요('+esc(I.date||'')+' 작성).')
+      +'<div class="acts">'+I.items.map(function(a,i){return '<div class="act"><div class="no">'+(i+1)+'</div><div><h3>'+esc(a.pattern)+'</h3><p><b>본 글</b> · '+esc(a.seen)+'</p><p style="margin-top:6px"><b>우리라면</b> · '+esc(a.apply)+'</p><div class="ex">'+esc(a.why)+'</div></div></div>'}).join('')+'</div></section>';
+    if(tr.length) h+='<section class="blk">'+sec('c-a','반응 상위 글의 제목은 전체보다 이런 특징이 더 많아요','반응(공감+댓글×2) 상위 '+(T.top_n||'')+'개와 전체 '+n(T.feed_total)+'개의 비교예요. 표본이 작아서 매일 쌓이는 기록으로 같은 경향이 반복되는지 봐요.')
+      +'<div class="panel">'+tr.map(function(x){var mx=Math.max(x.all,x.top,1);
+        return '<div class="ir t1"><div class="in">'+esc(x.name)+'</div><div><div class="trk" style="height:8px;margin-bottom:4px"><i style="width:'+Math.round(x.top/Math.max(60,mx)*100)+'%"></i></div><div class="trk dim" style="height:8px"><i style="width:'+Math.round(x.all/Math.max(60,mx)*100)+'%"></i></div></div><div class="iv">'+x.top+'%</div><div class="ip">전체 '+x.all+'% · '+(x.diff>=0?'+':'')+x.diff+'%p</div></div>'}).join('')
+      +'<p class="hint">진한 막대 = 상위 글, 흐린 막대 = 전체 글에서 그 특징이 있는 비율이에요.</p></div></section>';
+    h+='<section class="blk">'+sec('c-k','홈에서 반응이 큰 글 '+(T.top||[]).length+'개','공감과 댓글 합산 순이에요. 제목을 누르면 글이 열려요. 조회수는 공개되지 않아요.')
+      +'<div class="tablewrap"><table><thead><tr><th>제목</th><th>올린 날</th><th class="n">공감</th><th class="n">댓글</th></tr></thead><tbody>'
+      +(T.top||[]).map(function(p){return '<tr><td class="t"><a href="'+esc(p.url)+'" target="_blank" rel="noopener">'+esc(p.title)+'</a><span class="sub2">'+esc(p.nick||'')+'</span></td><td class="m">'+esc((p.date||'').slice(5,10).replace('-','/'))+'</td><td class="n">'+n(p.likes)+'</td><td class="n">'+n(p.comments)+'</td></tr>'}).join('')+'</tbody></table></div></section>';
+    if(G.length) h+='<section class="blk">'+sec('c-w','구글에서 지금 뜨는 검색어 '+G.length+'개','구글 트렌드 한국 일간 인기 검색어예요. 오른쪽은 네이버에서 그 검색어에 AI 브리핑이 나오는지예요(위쪽 5개만 확인).')
+      +'<div class="panel">'+G.map(function(g){var a=g.ai;
+        return '<div class="ir t2"><div><div class="in">'+esc(g.kw)+'</div>'+((g.news||[])[0]?'<div class="ip" style="text-align:left;margin-top:2px">'+esc(g.news[0])+'</div>':'')+'</div><div class="iv" style="font-size:15px">'+esc(g.traffic||'')+'</div><div>'+(a?(a.present?'<span class="pill good">AI 브리핑 있음 · 출처 '+(a.sources||[]).length+'곳</span>':'<span class="pill off">AI 브리핑 없음</span>'):'<span class="na">확인 안 함</span>')+'</div></div>'}).join('')+'</div></section>';
+    if((I.caution||[]).length) h+='<section class="blk"><div class="panel"><div class="ptitle">쓰기 전에 알아둘 것</div><ul class="steps">'+I.caution.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul></div></section>';
+    return h;
+  }
+
+
+  /* =========================================================
+     움직이는 그래프 (2026-10-30): 방문자 선 그래프 · 순위 변화 슬로프
+     애니메이션은 처음 그려질 때와 기간을 바꿀 때만 재생하고, 모션 줄이기 설정이면 끝 모양으로 바로 보여줘요.
+     ========================================================= */
+  function trendBlock(C,d){
+    var all=C.bars.slice();
+    if(all.length<3) return '';
+    var full=all.filter(function(v){return v.date!==C.today});
+    if(full.length<2) return '';
+    var part=all.filter(function(v){return v.date===C.today})[0];
+    var mx=Math.max.apply(null,all.map(function(v){return v.v}).concat([1]));
+    var top=Math.max(10,Math.ceil(mx*1.15/10)*10), N=all.length;
+    var X=function(i){return N>1?i/(N-1)*100:50}, Y=function(v){return 100-(v/top*90)-4};
+    var pts=all.map(function(v,i){return {x:X(i),y:Y(v.v),v:v}});
+    var fp=pts.filter(function(p){return p.v.date!==C.today});
+    var f=function(p){return p.x.toFixed(2)+' '+p.y.toFixed(2)};
+    var line='M'+fp.map(f).join(' L'), area=line+' L'+fp[fp.length-1].x.toFixed(2)+' 100 L'+fp[0].x.toFixed(2)+' 100 Z';
+    var dash=(part&&fp.length)?'M'+f(fp[fp.length-1])+' L'+f(pts[pts.length-1]):'';
+    var first=full[0], last=full[full.length-1], diff=last.v-first.v;
+    var best=full.reduce(function(a,b){return b.v>a.v?b:a});
+    var title='하루 방문자가 '+md(first.date)+' '+n(first.v)+'명에서 '+md(last.date)+' '+n(last.v)+'명으로 '+(diff>0?'늘었어요':diff<0?'줄었어요':'그대로예요');
+    var h='<section class="blk">'+sec('c-a',title,'가장 많았던 날은 '+md(best.date)+'('+DAYS[new Date(best.date).getDay()]+') '+n(best.v)+'명이에요. 점에 마우스를 올리면 그날 숫자가 보여요. 점선은 아직 집계 중인 오늘이에요.')
+      +'<div class="panel"><div class="lc"><span class="lcy" style="top:0">'+n(top)+'</span><span class="lcy" style="top:50%">'+n(top/2)+'</span><span class="lcy" style="bottom:0">0</span>'
+      +'<svg class="lcs" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="일별 방문자 선 그래프"><path class="lca" d="'+area+'"/><path class="lcl" vector-effect="non-scaling-stroke" d="'+line+'"/>'
+      +(dash?'<path class="lcd" vector-effect="non-scaling-stroke" d="'+dash+'"/>':'')+'</svg>';
+    pts.forEach(function(p,i){
+      var isPart=p.v.date===C.today, isLast=p===fp[fp.length-1];
+      h+='<i class="lcp'+(isPart?' part':'')+(isLast?' end':'')+'" style="left:'+p.x.toFixed(2)+'%;top:'+p.y.toFixed(2)+'%;--i:'+i+'" data-tip="'+md(p.v.date)+'('+DAYS[new Date(p.v.date).getDay()]+') 방문자 '+n(p.v.v)+'명'+(isPart?' · 집계 중':'')+'"></i>';
+    });
+    h+='</div><div class="lcx"><span>'+md(all[0].date)+'</span><span>'+md(all[all.length-1].date)+'</span></div></div></section>';
+    return h;
+  }
+
+  function slopeBlock(C,d){
+    var rows=C.R.filter(function(r,i,arr){return C.Rbase[r.kw]&&arr.findIndex(function(x){return x.kw===r.kw})===i}).map(function(r){
+      var p=C.Rbase[r.kw];return {kw:r.kw,a:p.mr===''?null:+p.mr,b:r.mr===''?null:+r.mr}});
+    if(!C.rankBase||!rows.length) return '<section class="blk">'+sec('c-w','순위 변화 그래프는 기록이 더 쌓이면 나와요','통합검색 순위를 '+d+'일 전과 비교해서 그려요. 비교할 옛 기록이 아직 없어요.')+'</section>';
+    var nums=[];rows.forEach(function(r){if(r.a!=null)nums.push(r.a);if(r.b!=null)nums.push(r.b)});
+    var maxR=Math.max.apply(null,nums.concat([5])), OUT=maxR+2;
+    var P=function(v){var y=v==null?OUT:v;return 6+(y-1)/(OUT-1)*88};
+    var cls=function(r){var a=r.a==null?OUT:r.a,b=r.b==null?OUT:r.b;return b<a?'up':b>a?'down':'same'};
+    var up=rows.filter(function(r){return cls(r)==='up'}), dn=rows.filter(function(r){return cls(r)==='down'}), sm=rows.filter(function(r){return cls(r)==='same'});
+    var txt=function(v){return v==null?'첫 화면 밖':v+'위'};
+    var ticks=[1,5,10,15,20,25].filter(function(t){return t<=maxR});
+    var h='<section class="blk">'+sec('c-k','통합검색 순위가 오른 키워드 '+up.length+'개, 내린 키워드 '+dn.length+'개예요',md(C.rankBase)+'과 '+md(C.rankDate)+'을 비교했어요. 위로 갈수록 순위가 높아요. 초록 선은 올랐고 빨간 선은 내렸고 회색 선은 그대로예요. 점에 마우스를 올리면 키워드가 보여요.')
+      +'<div class="panel"><div class="slh"><span>'+md(C.rankBase)+'</span><span>'+md(C.rankDate)+'</span></div><div class="sl"><div class="sla">';
+    ticks.forEach(function(t){h+='<span style="top:'+P(t)+'%">'+t+'위</span>'});
+    h+='<span style="top:'+P(null)+'%">밖</span></div><div class="slm"><svg class="sls" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">';
+    ticks.concat([null]).forEach(function(t){h+='<line class="slg" x1="0" x2="100" y1="'+P(t)+'" y2="'+P(t)+'" vector-effect="non-scaling-stroke"/>'});
+    rows.forEach(function(r){h+='<line class="sll '+cls(r)+'" x1="0" x2="100" y1="'+P(r.a)+'" y2="'+P(r.b)+'" vector-effect="non-scaling-stroke"/>'});
+    h+='</svg>';
+    rows.forEach(function(r,i){var tip=esc(r.kw)+' · '+txt(r.a)+' → '+txt(r.b);
+      h+='<i class="sld '+cls(r)+'" style="left:0;top:'+P(r.a)+'%;--i:'+i+'" data-tip="'+tip+'"></i><i class="sld '+cls(r)+'" style="left:100%;top:'+P(r.b)+'%;--i:'+i+'" data-tip="'+tip+'"></i>'});
+    h+='</div><div class="sla r">';
+    ticks.forEach(function(t){h+='<span style="top:'+P(t)+'%">'+t+'위</span>'});
+    h+='<span style="top:'+P(null)+'%">밖</span></div></div>';
+    var grp=function(name,list,c){return list.length?'<p class="hint" style="margin:10px 0 0"><span class="pill '+c+'">'+name+' '+list.length+'</span> '+list.map(function(r){return esc(r.kw)+'('+txt(r.a)+'→'+txt(r.b)+')'}).join(' · ')+'</p>':''};
+    h+=grp('올랐어요',up,'good')+grp('내렸어요',dn,'crit')+grp('그대로예요',sm,'off');
+    return h+'</div></section>';
+  }
+
+  /* ---------- 그리기 ---------- */
+  function render(soft){
+    var v=UI.view, k=v.split('-')[0], h;
+    UI.playNow=false;
+    if(v==='bl-perf')h=viewBlPerf();
+    else if(v==='bl-admin')h=viewBlAdmin();
+    else if(v==='bl-insight')h=viewBlInsight();
+    else if(v==='bl-bench')h=viewBench();
+    else if(v==='bl-top')h=viewTop();
+    else if(v==='bl-trend')h=viewTrend();
+    else if(/-plan$/.test(v)&&PLAN_NAME[k])h=viewPlan(k);
+    else if(v==='rp-week')h=viewWeek();
+    else if(PLAN[k])h=viewSoon(k);
+    else {UI.view='bl-perf';return render()}
+    var y=window.scrollY;
+    $('#view').innerHTML=h;drawNav();
+    $('#view').classList.toggle('play',!!UI.playNow);
+    if(UI.playNow){clearTimeout(UI.at);var ak=UI.akey;UI.at=setTimeout(function(){UI.animDone=ak},1800)}
+    if(soft)window.scrollTo(0,y);
+  }
+  function go(v){
+    UI.view=v;try{localStorage.setItem('isz-view',v)}catch(e){}
+    try{history.replaceState(null,'','#'+v)}catch(e){}
+    render();window.scrollTo(0,0);closeMenu();
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('[data-v]');if(b){go(b.getAttribute('data-v'));return}
+    var g=e.target.closest('[data-range]');if(g){UI.range=+g.getAttribute('data-range');try{localStorage.setItem('isz-range',UI.range)}catch(_){}render(true);return}
+    var s=e.target.closest('[data-sort]');if(s){UI.sort=s.getAttribute('data-sort');render(true);return}
+    var pr=e.target.closest('[data-plan]');if(pr){var kk=UI.view.split('-')[0];UI.plan[kk]=+pr.getAttribute('data-plan');render(true);return}
+    var pt=e.target.closest('[data-ptab]');if(pt){var k2=UI.view.split('-')[0];UI.tab[k2+(UI.plan[k2]||0)]=+pt.getAttribute('data-ptab');render(true);return}
+    if(e.target.id==='plCopy'){var k3=e.target.getAttribute('data-k'),P3=DB.plan[k3];if(P3){var i3=UI.plan[k3]||0,t3=P3.topics[i3],v3=(t3.versions||[])[UI.tab[k3+i3]||0]||{};copyText((t3.titles||[])[t3.best_hook||0]+'\n\n'+(v3.lines||[]).join('\n'));e.target.textContent='복사했어요'}return}
+    if(e.target.id==='chkReset'){CHK={};try{localStorage.removeItem('isz-chk')}catch(_){}render(true)}
+  });
+  document.addEventListener('change',function(e){
+    var t=e.target;
+    if(t.matches('#chk input')){CHK[t.getAttribute('data-i')]=t.checked;try{localStorage.setItem('isz-chk',JSON.stringify(CHK))}catch(_){}}
+  });
+  // 막대 위 말풍선
+  var tip=$('#tip');
+  document.addEventListener('pointerover',function(e){var el=e.target.closest('[data-tip]');if(!el){tip.hidden=true;return}tip.textContent=el.getAttribute('data-tip');tip.hidden=false});
+  document.addEventListener('pointermove',function(e){if(tip.hidden)return;var x=Math.min(e.clientX+14,window.innerWidth-tip.offsetWidth-8),y=e.clientY-tip.offsetHeight-12;tip.style.left=x+'px';tip.style.top=(y<8?e.clientY+18:y)+'px'});
+  document.addEventListener('pointerleave',function(){tip.hidden=true});
+  // 휴대폰 메뉴
+  function closeMenu(){$('#side').classList.remove('open');$('#scrim').classList.remove('show')}
+  $('#menuBtn').addEventListener('click',function(){$('#side').classList.add('open');$('#scrim').classList.add('show')});
+  $('#scrim').addEventListener('click',closeMenu);
+
+  render();start();
+})();
+</script>
+<!-- 2026-10-29: 벤치마킹·AI 브리핑·자동 기획·트렌드 메뉴 추가 -->
+</body></html>
