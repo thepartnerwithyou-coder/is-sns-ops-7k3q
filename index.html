@@ -432,13 +432,16 @@ window.claude={use:function(){
   try{var sv=localStorage.getItem('isz-view');if(!location.hash&&sv)UI.view=sv}catch(e){}
 
   function withTimeout(p,ms){return Promise.race([p,new Promise(function(r){setTimeout(function(){r('__timeout')},ms)})])}
+  /* 매일 집계 자료는 페이지에 직접 넣어 배포한다(tools/build_dashboard.py). 저장소(db) 문서와 이름이 같으면 이쪽이 우선 */
+  function overlay(col){var D=window.__SNS_DATA||{};Object.keys(D).forEach(function(k){var p=k.split('/');if(p[0]===col)DB[col][p[1]]=D[k]})}
   function start(){
+    COLS.forEach(function(col){overlay(col);if(Object.keys(DB[col]).length)LOADED[col]=true});
     if(!window.claude||!window.claude.use){NODB=true;render();return}
     window.claude.use('db').then(function(db){
       if(!db){NODB=true;render();return}
       COLS.forEach(function(col){
         db.collection(col).onSnapshot(function(snap){
-          var o={};snap.docs.forEach(function(d){o[d.id]=d.data()});DB[col]=o;LOADED[col]=true;render(true);
+          var o={};snap.docs.forEach(function(d){o[d.id]=d.data()});DB[col]=o;overlay(col);LOADED[col]=true;render(true);
         },function(){LOADED[col]=true;render(true)});
       });
     },function(){NODB=true;render()});
